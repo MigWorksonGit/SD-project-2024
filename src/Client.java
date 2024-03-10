@@ -1,3 +1,4 @@
+import java.net.MalformedURLException;
 import java.rmi.*;
 import java.rmi.server.*;
 import java.util.Scanner;
@@ -12,23 +13,43 @@ public class Client extends UnicastRemoteObject implements Client_I
         System.out.println("> " + s);
     }
 
-    public static void main(String[] args)
-    {
-        String msg;
-        try (Scanner sc = new Scanner(System.in)) {
-            Gateway_I server = (Gateway_I) Naming.lookup("rmi://localhost:1099/hello");
+    public static void main(String[] args) {
+        try (Scanner sc = new Scanner(System.in))
+        {
+            Gateway_I server = null;
             Client client = new Client();
-            server.subscribe("Miguel", (Client_I)client);
-            System.out.println("Client sent subscription to server");
-            while (true) {
-				System.out.print("> ");
-				msg = sc.nextLine();
+            try {
+                try {
+                    server = (Gateway_I) Naming.lookup("rmi://localhost:1099/hello");
+                }
+                catch(MalformedURLException e) {
+					System.out.println("Server Url is incorrectly formed");
+					System.out.println("Cant comunicate with server...");
+					System.out.println("Closing...");
+					System.exit(0);
+				}
+				catch (NotBoundException e) {
+					System.out.println("Cant comunicate with server...");
+					System.out.println("Closing...");
+					System.exit(0);
+				}
+                server.subscribe(args[0], (Client_I)client);
+                System.out.println("Client sent subscription to server");
+            } 
+            catch (RemoteException e) {
+                System.out.println("Error comunicating to the server");
+                System.exit(0);
+            }
+            while (true)
+            {
+                System.out.print("> ");
+		        String msg = sc.nextLine();
                 Message m = new Message(msg);
-				server.remote_print(m);
-			}
+                server.remote_print(m);
+            }
         }
         catch (Exception e) {
-            System.out.println("Exception in main: " + e);
-        }
+			System.out.println("Exception in main: " + e);
+		}
     }
 }
