@@ -13,7 +13,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
 	}
 
     public void remote_print(Message m) throws RemoteException {
-		System.out.println("Server:" + m);
+		System.out.println("> Server: " + m);
 	}
 
     public void remote_response(Message m) throws RemoteException {
@@ -25,6 +25,13 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         System.out.println("Subscribing " + name);
 		System.out.print("> ");
 		clients.put(name, client);
+    }
+
+    public void unsubscribe(String name, Client_I client) throws RemoteException
+    {
+        System.out.println("Unsubscribing " + name);
+		System.out.print("> ");
+        clients.remove(name);
     }
 
     public static void main(String[] args)
