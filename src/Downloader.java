@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.net.MulticastSocket;
 
 public class Downloader {
 
@@ -20,15 +21,17 @@ public class Downloader {
     private static int breakpoint = 10;
     private static String url;
 
+    private static String MULTICAST_ADDRESS = "230.0.0.1";
+    private static int PORT = 4446;
+
     public Downloader() {
     }
 
     public static void main(String args[]) throws InterruptedException {
         InetAddress multicastAddress;
-        int multicastPort = 4446;
 
         try {
-            multicastAddress = InetAddress.getByName("230.0.0.1");
+            multicastAddress = InetAddress.getByName(MULTICAST_ADDRESS);
             MulticastSocket multicastSocket = new MulticastSocket();
 
             while (recursive <= breakpoint) {
@@ -59,7 +62,7 @@ public class Downloader {
                     byte[] data = baos.toByteArray();
 
                     // Send the byte array via multicast
-                    DatagramPacket packet = new DatagramPacket(data, data.length, multicastAddress, multicastPort);
+                    DatagramPacket packet = new DatagramPacket(data, data.length, multicastAddress, PORT);
                     multicastSocket.send(packet);
 
                     Elements links = doc.select("a[href]");
