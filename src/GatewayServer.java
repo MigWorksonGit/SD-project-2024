@@ -9,6 +9,8 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     private static final long serialVersionUID = 1L;
     static HashMap<String, Client_I> clients = new HashMap<String, Client_I>();
 
+    // new QUEUE
+
     public GatewayServer() throws RemoteException {
 		super();
 	}
@@ -32,7 +34,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
                 client.print_on_client(msg.getAction() + " " + msg.getMessage());
                 break;
             case "search":
-                // downloaders.push(msg.getMessage());
+                // send to queue queue.push(....)
                 break;
             case "admin":
                 // client.print_on_client(msg.getAction() + " " + msg.getMessage());

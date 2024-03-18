@@ -24,8 +24,7 @@ public class Downloader {
     private static String MULTICAST_ADDRESS = "230.0.0.1";
     private static int PORT = 4446;
 
-    public Downloader() {
-    }
+    public Downloader() {}
 
     public static void main(String args[]) throws InterruptedException {
         InetAddress multicastAddress;
