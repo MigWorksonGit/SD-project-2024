@@ -14,6 +14,9 @@ public class DownloaderThread extends Thread
     // DOwnloader = new Downloader(URL_QUEUE)
     // DOwnloader = new Downloader(URL_QUEUE)
 
+    // TERMINAINS DIFERENTES
+    // fgh
+
     public DownloaderThread() {}
 
     @Override
