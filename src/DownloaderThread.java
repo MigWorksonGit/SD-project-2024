@@ -14,8 +14,7 @@ public class DownloaderThread extends Thread
     // DOwnloader = new Downloader(URL_QUEUE)
     // DOwnloader = new Downloader(URL_QUEUE)
 
-    // TERMINAINS DIFERENTES
-    // fgh
+    // TERMINAINS DIFERENTES (terminais diferentes) (programas differentes)
 
     public DownloaderThread() {}
 
