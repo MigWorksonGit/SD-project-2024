@@ -67,6 +67,8 @@ public class Downloader {
                     Elements links = doc.select("a[href]");
                     //for (Element link : links)
                     //  System.out.println(link.text() + "\n" + link.attr("abs:href") + "\n");
+
+                    //aqui
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
