@@ -6,15 +6,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.*;
+import java.util.*;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.net.MulticastSocket;
 
 public class Downloader {
 
+    static LinkedList<String> visited = new LinkedList<>();
     static LinkedBlockingQueue<String> Url_Queue = new LinkedBlockingQueue<>();
     static HashMap<String, HashSet<String>> index = new HashMap<>();
     private static int recursive = 0;
@@ -67,16 +69,40 @@ public class Downloader {
                     Elements links = doc.select("a[href]");
                     //for (Element link : links)
                     //  System.out.println(link.text() + "\n" + link.attr("abs:href") + "\n");
-
-                    //aqui
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    
+                    for (Element link : links) {
+                        if(index.containsKey( link.attr("abs:href"))){
+                            if(!index.get(link.attr("abs:href")).contains(url))
+                                index.get(link.attr("abs:href")).add(url);
+                        }
+                        else{
+                            HashSet aux = new HashSet();
+                            aux.add(url);
+                            index.put(link.attr("abs:href"),aux);
+                        }
+                        Url_Queue.add(link.attr("abs:href"));
+                        visited.add(link.attr(url));
+                    }
+                } catch (IllegalArgumentException | IOException e) {
+                    visited.add(url);
+                    url = Url_Queue.take();
+                    while (check_visited(url)) {
+                        url = Url_Queue.take();
+                    }
+                    recursive++;
                 }
-                recursive++;
+                multicastSocket.close();
             }
-            multicastSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    public static boolean check_visited(String url) {
+        for (String str : visited)
+            return Objects.equals(str, url);
+        return false;
+    }
+    
 }
+
