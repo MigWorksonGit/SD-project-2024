@@ -41,44 +41,19 @@ public class Client extends UnicastRemoteObject implements Client_I
             System.out.println("Error comunicating to the server");
             System.exit(0);
         }
-        // TODO: put this on the server
-        System.out.println("Welcome Aristocat");
-        System.out.println("What would you like to do today?");
-        System.out.println("1 -> Send Link");
-        System.out.println("2 -> Search word");
-        System.out.println("3 -> Admin Rights");
-        System.out.println("4 -> Exit");
-        int shouldExit = 0;
-        do
+
+        while (true)
         {
             System.out.print("> ");
-            String choice = sc.nextLine();
-
-            switch (choice) {
-                case "1":
-                    String msg = sc.nextLine();
-                    Message m = new Message(msg);
-                    server.remote_print(m);
-                    System.out.println("> Sending link");
-                    break;
-                case "2":
-                    System.out.println("Searching name");
-                    break;
-                case "3":
-                    System.out.println("Admining");
-                    break;
-                case "4":
-                    shouldExit = 1;
-                    break;
-                default: break;
+            String input = sc.nextLine();
+            String[] div = input.split(" ");
+            if (div.length != 2) {
+                System.out.println("Bad command");
+                continue;
             }
-
-            if (shouldExit == 1) {
-                server.unsubscribe(args[0], (Client_I)client);
-                break;
-            }
+            Message msg = new Message(div[0], div[1]);
+            server.receive_info(msg, (Client_I)client);
         }
-        while (true);
     }
     catch (Exception e) {
         System.out.println("Exception in main: " + e);

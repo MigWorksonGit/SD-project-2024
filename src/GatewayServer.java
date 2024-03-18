@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 public class GatewayServer extends UnicastRemoteObject implements Gateway_I
 {
+    //private DownloaderThread downloaders;
     private static final long serialVersionUID = 1L;
     static HashMap<String, Client_I> clients = new HashMap<String, Client_I>();
 
@@ -12,26 +13,38 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
 		super();
 	}
 
-    public void remote_print(Message m) throws RemoteException {
-		System.out.println("> Server: " + m);
-	}
-
-    public void remote_response(Message m) throws RemoteException {
-        return;
-    }
-
-    public void subscribe(String name, Client_I client) throws RemoteException
-    {
-        System.out.println("Subscribing " + name);
+    public void subscribe(String name, Client_I client) throws RemoteException {
+        System.out.println("> Subscribing " + name);
 		System.out.print("> ");
 		clients.put(name, client);
     }
 
-    public void unsubscribe(String name, Client_I client) throws RemoteException
-    {
-        System.out.println("Unsubscribing " + name);
+    public void unsubscribe(String name, Client_I client) throws RemoteException {
+        System.out.println("> Unsubscribing " + name);
 		System.out.print("> ");
         clients.remove(name);
+    }
+
+    public void receive_info(Message msg, Client_I client) throws RemoteException
+    {
+		switch (msg.getAction()) {
+            case "link":
+                client.print_on_client(msg.getAction() + " " + msg.getMessage());
+                break;
+            case "search":
+                // downloaders.push(msg.getMessage());
+                break;
+            case "admin":
+                // client.print_on_client(msg.getAction() + " " + msg.getMessage());
+                break;
+            default:
+                break;
+        }
+	}
+
+    public void debug_print(String debug) throws RemoteException {
+        System.out.println("> Debug: " + debug);
+        System.out.print("> ");
     }
 
     public static void main(String[] args)
@@ -44,5 +57,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         catch (RemoteException re) {
 			System.out.println("Exception in GatewayServer.main: " + re);
 		}
+
+
     }
 }

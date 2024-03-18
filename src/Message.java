@@ -2,17 +2,19 @@ import java.io.*;
 
 public class Message implements Serializable
 {
-	public String text;
+	public String action;
+	public String msg;
 
-	public Message(String text) {
-		this.text = text;
+	public Message(String text, String msg) {
+		this.action = text;
+		this.msg = msg;
 	}
 
-	public void change_text(String text) {
-		this.text = text;
+	public String getAction() {
+		return action;
 	}
 
-	public String toString() {
-		return text;
+	public String getMessage() {
+		return msg;
 	}
 }
