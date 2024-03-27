@@ -7,12 +7,12 @@ import java.net.InetAddress;
 import java.io.ObjectInputStream;
 import java.io.ByteArrayInputStream;
 
-public class Barrel {
+public class OLDBarrel {
     
     private static String MULTICAST_ADDRESS = "230.0.0.1";
     private static int PORT = 4446;
 
-    public Barrel() throws RemoteException {
+    public OLDBarrel() throws RemoteException {
         super();
     }
 
@@ -31,7 +31,7 @@ public class Barrel {
                 socket.receive(packet);
                 ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
                 ObjectInputStream ois = new ObjectInputStream(bais);
-                Url url = (Url) ois.readObject();
+                OLDUrl url = (OLDUrl) ois.readObject();
                 url.toString();
             }
         } catch (Exception e) { 

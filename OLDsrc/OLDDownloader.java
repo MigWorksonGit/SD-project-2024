@@ -14,7 +14,7 @@ import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class Downloader {
+public class OLDDownloader {
 
     static LinkedList<String> visited = new LinkedList<>();
     static LinkedBlockingQueue<String> Url_Queue = new LinkedBlockingQueue<>();
@@ -26,7 +26,7 @@ public class Downloader {
     private static String MULTICAST_ADDRESS = "230.0.0.1";
     private static int PORT = 4446;
 
-    public Downloader() {}
+    public OLDDownloader() {}
 
     public static void main(String args[]) throws InterruptedException {
         InetAddress multicastAddress;
@@ -53,7 +53,7 @@ public class Downloader {
                         //System.out.println(tokens.nextToken().toLowerCase());
                     }
 
-                    Url url_new = new Url(url, doc.title(), citation);
+                    OLDUrl url_new = new OLDUrl(url, doc.title(), citation);
 
                     // Convert url_new to byte array
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();

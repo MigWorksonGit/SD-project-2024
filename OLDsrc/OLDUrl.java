@@ -1,12 +1,12 @@
 import java.io.Serializable;
 
-public class Url implements Serializable {
+public class OLDUrl implements Serializable {
     //private int id;
     private String url;
     private String title;
     private String citation;
     
-    public Url(String url, String title, String citation) {
+    public OLDUrl(String url, String title, String citation) {
         //this.id = id;
         this.url = url;
         this.title = title;

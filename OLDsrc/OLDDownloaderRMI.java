@@ -7,11 +7,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class DownloaderRMI extends UnicastRemoteObject implements DownloaderRMI_I
+public class OLDDownloaderRMI extends UnicastRemoteObject implements OLDDownloaderRMI_I
 {
     public static LinkedBlockingQueue<String> Url_Queue;
 
-    public DownloaderRMI() throws RemoteException {
+    public OLDDownloaderRMI() throws RemoteException {
         super();
     }
 
@@ -38,11 +38,11 @@ public class DownloaderRMI extends UnicastRemoteObject implements DownloaderRMI_
     public static void main(String[] args)
     {
         try {
-            Gateway_I server = null;
-            DownloaderRMI downloader = new DownloaderRMI();
+            OLDGateway_I server = null;
+            OLDDownloaderRMI downloader = new OLDDownloaderRMI();
             try {
                 try {
-                    server = (Gateway_I) Naming.lookup("rmi://localhost:1099/hello");
+                    server = (OLDGateway_I) Naming.lookup("rmi://localhost:1099/hello");
                 }
                 catch(MalformedURLException e) {
                     System.out.println("Server Url is incorrectly formed");
@@ -55,7 +55,7 @@ public class DownloaderRMI extends UnicastRemoteObject implements DownloaderRMI_
                     System.out.println("Closing...");
                     System.exit(0);
                 }
-                server.join_downloader((DownloaderRMI_I)downloader, args[0]);
+                server.join_downloader((OLDDownloaderRMI_I)downloader, args[0]);
                 System.out.println("Communication with server sucesfull");
             } catch (RemoteException e) {
                 System.out.println("Error comunicating to the server");

@@ -3,9 +3,9 @@ import java.rmi.*;
 import java.rmi.server.*;
 import java.util.Scanner;
 
-public class Client extends UnicastRemoteObject implements Client_I
+public class OLDClient extends UnicastRemoteObject implements OLDClient_I
 {
-    Client() throws RemoteException {
+    OLDClient() throws RemoteException {
         super();
     }
 
@@ -17,11 +17,11 @@ public class Client extends UnicastRemoteObject implements Client_I
     {
     try (Scanner sc = new Scanner(System.in))
     {
-        Gateway_I server = null;
-        Client client = new Client();
+        OLDGateway_I server = null;
+        OLDClient client = new OLDClient();
         try {
             try {
-                server = (Gateway_I) Naming.lookup("rmi://localhost:1099/hello");
+                server = (OLDGateway_I) Naming.lookup("rmi://localhost:1099/hello");
             }
             catch(MalformedURLException e) {
                 System.out.println("Server Url is incorrectly formed");
@@ -34,7 +34,7 @@ public class Client extends UnicastRemoteObject implements Client_I
                 System.out.println("Closing...");
                 System.exit(0);
             }
-            server.subscribe(args[0], (Client_I)client);
+            server.subscribe(args[0], (OLDClient_I)client);
             System.out.println("Client sent subscription to server");
         } 
         catch (RemoteException e) {
@@ -51,8 +51,8 @@ public class Client extends UnicastRemoteObject implements Client_I
                 System.out.println("Bad command");
                 continue;
             }
-            Message msg = new Message(div[0], div[1]);
-            server.receive_info(msg, (Client_I)client);
+            OLDMessage msg = new OLDMessage(div[0], div[1]);
+            server.receive_info(msg, (OLDClient_I)client);
         }
     }
     catch (Exception e) {
