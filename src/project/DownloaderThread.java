@@ -25,6 +25,8 @@ class DownloaderThread extends Thread implements Serializable
             {
                 semaphore.acquire();
                 url = URL_QUEUE.remove();
+                // release semaphore here?
+                // Porbably
                 System.out.println("Downloader " + thread + " obtained URL: " + url);
             }
         }
