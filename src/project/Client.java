@@ -12,7 +12,7 @@ public class Client
     public static void main(String[] args) {
         try {
             Gateway_I server = null;
-            Client client = new Client();
+            //Client client = new Client();
             // See this more.
             // Try and give correct error messages and such
             try {
@@ -50,7 +50,7 @@ public class Client
                         try {
                             server = (Gateway_I) Naming.lookup("rmi://localhost:1099/hello");
                             //new URL(words[1]);
-                            server.print_on_server(words[1]);
+                            server.receive_url(words[1]);
                         }
                         catch (MalformedURLException e) {
                             System.out.println("Url inserido inválido");

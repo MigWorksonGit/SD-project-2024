@@ -5,4 +5,5 @@ import java.rmi.*;
 public interface Gateway_I extends Remote
 {
     public void print_on_server(String message) throws RemoteException;
+    public void receive_url(String url) throws RemoteException;
 }

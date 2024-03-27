@@ -45,15 +45,21 @@ public class DownloaderMain extends UnicastRemoteObject implements Downloader_I
 
         try {
             DownloaderMain downloaderMain = new DownloaderMain();
-            LocateRegistry.createRegistry(1099).rebind("downloaders", downloaderMain);
+            LocateRegistry.createRegistry(1098).rebind("downloaders", downloaderMain);
             System.out.println("Downloaders initialization is ready");
 
-            // for (int i = 0; i < num; ++i) {
-            //     downloaders[i] = new DownloaderThread(String.valueOf(i));
-            // }
+            for (int i = 0; i < num; ++i) {
+                downloaders[i] = new DownloaderThread(String.valueOf(i));
+            }
         }
         catch (RemoteException re) {
 			System.out.println("Exception in DownloaderMain.main: " + re);
 		}
+    }
+
+    public void sendUrlToDownloaders(String url) throws RemoteException
+    {
+        URL_QUEUE.add(url);
+        semaphore.release();
     }
 }
