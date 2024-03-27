@@ -1,17 +1,21 @@
+package project;
+
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Map;
+import java.util.HashMap;
 
 public class GatewayServer extends UnicastRemoteObject implements Gateway_I
 {
-    static Map<String, String> registeredUsers;
+    static HashMap<String, Client> clients;
 
     public GatewayServer() throws RemoteException {
         super();
     }
 
     public static void main(String[] args) {
+        clients = new HashMap<String, Client>();
+        
         try {
             GatewayServer server = new GatewayServer();
             LocateRegistry.createRegistry(1099).rebind("hello", server);

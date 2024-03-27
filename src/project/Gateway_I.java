@@ -1,3 +1,5 @@
+package project;
+
 import java.rmi.*;
 
 public interface Gateway_I extends Remote

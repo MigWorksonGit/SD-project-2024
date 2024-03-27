@@ -1,5 +1,7 @@
+package project;
+
 import java.net.MalformedURLException;
-import java.net.URL;
+//import java.net.URL;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -10,6 +12,7 @@ public class Client
     public static void main(String[] args) {
         try {
             Gateway_I server = null;
+            Client client = new Client();
             // See this more.
             // Try and give correct error messages and such
             try {
