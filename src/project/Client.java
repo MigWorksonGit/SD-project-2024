@@ -46,14 +46,18 @@ public class Client
                     input = sc.nextLine();
                     words = input.trim().split(" ");
         
-                    if (words[0].equals("add")) {
-                        try {
-                            server = (Gateway_I) Naming.lookup("rmi://localhost:1099/hello");
-                            //new URL(words[1]);
-                            server.receive_url(words[1]);
-                        }
-                        catch (MalformedURLException e) {
-                            System.out.println("Url inserido inválido");
+                    if (words[0].equals("index")) {
+                        // if no url is given it just dies.
+                        if (!words[1].startsWith("https"))
+                            System.out.println("Url must start with https");
+                        else {
+                            try {
+                                server = (Gateway_I) Naming.lookup("rmi://localhost:1099/hello");
+                                //new URL(words[1]);
+                                server.receive_url(words[1]);
+                            } catch (MalformedURLException e) {
+                                System.out.println("Url inserido inválido");
+                            }
                         }
                     }
                     
