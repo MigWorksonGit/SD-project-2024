@@ -8,6 +8,9 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 
+import project.interfaces.Downloader_I;
+import project.interfaces.Gateway_I;
+
 public class GatewayServer extends UnicastRemoteObject implements Gateway_I
 {
     static HashMap<String, Client> clients;

@@ -3,8 +3,12 @@ package project;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
+
+import project.interfaces.Downloader_I;
+import project.resources.WebPage;
 
 public class DownloaderMain extends UnicastRemoteObject implements Downloader_I
 {
@@ -13,6 +17,8 @@ public class DownloaderMain extends UnicastRemoteObject implements Downloader_I
     // Queue
     static ConcurrentLinkedQueue<String> URL_QUEUE;
     static Semaphore semaphore;
+    // List of already visited links
+    static ConcurrentHashMap<String, WebPage> visited;
 
     public DownloaderMain() throws RemoteException {
         super();

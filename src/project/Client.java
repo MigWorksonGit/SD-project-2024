@@ -7,6 +7,8 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Scanner;
 
+import project.interfaces.Gateway_I;
+
 public class Client
 {
     public static void main(String[] args) {

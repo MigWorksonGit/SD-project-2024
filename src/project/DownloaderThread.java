@@ -10,6 +10,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import project.resources.Url;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -51,7 +53,7 @@ class DownloaderThread extends Thread implements Serializable
             {
                 semaphore.acquire();
                 url = URL_QUEUE.remove();
-                indexURL(url, multicastSocket);
+                indexURl_recursive(url, 10, multicastSocket);
                 // System.out.println("Downloader " + thread + " obtained URL: " + url);
             }
         }
@@ -62,6 +64,11 @@ class DownloaderThread extends Thread implements Serializable
         } finally {
             multicastSocket.close();
         }
+    }
+
+    void indexURl_recursive(String url, int recursive, MulticastSocket multicastSocket)
+    {
+
     }
 
     void indexURL(String url, MulticastSocket multicastSocket)

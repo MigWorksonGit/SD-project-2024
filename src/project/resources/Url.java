@@ -1,4 +1,4 @@
-package project;
+package project.resources;
 
 import java.io.Serializable;
 

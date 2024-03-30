@@ -7,5 +7,5 @@ exit to exit cmd into powershell
 
 
 
-javac -cp ".;lib/*" -d bin src/project/*.java
+javac -cp ".;lib/*" -d bin src/project/*.java src/project/interfaces/*.java src/project/resources/*.java
 java -cp "bin;lib/*" project.<main_class_name_here>
