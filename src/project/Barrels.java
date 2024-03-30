@@ -34,7 +34,7 @@ public class Barrels extends UnicastRemoteObject implements Barrels_I
     @SuppressWarnings("deprecation")   // because joinGroup gives a warning
     public static void main(String[] args)
     {
-        Barrels barrel;
+        Barrels barrel = null;
         try {
             // Dont forget to check for errors here!
             barrel = new Barrels(args[0], Integer.parseInt(args[1]));
@@ -59,7 +59,8 @@ public class Barrels extends UnicastRemoteObject implements Barrels_I
                 multicastSocket.receive(packet);
 
                 System.out.println("Received packet from " + packet.getAddress().getHostAddress() + ":" + packet.getPort() + " with message:");
-                String message = new String(packet.getData(), 0, packet.getLength());
+                // Offset is 6 because there is some random bytes before the start of the print message?
+                String message = new String(packet.getData(), 6, packet.getLength());
 
                 System.out.println(message);
             }
