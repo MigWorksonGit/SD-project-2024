@@ -11,6 +11,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import project.resources.Url;
+import project.resources.WebPage;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -18,6 +19,7 @@ import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.StringTokenizer;
 
@@ -32,7 +34,7 @@ class DownloaderThread extends Thread implements Serializable
     // private static int breakpoint = 10;
 
     private static String MULTICAST_ADDRESS = "230.0.0.1";
-    private static int PORT = 4446;
+    private static int MULTICAST_PORT = 4446;
 
     String name;
     Thread thread;
@@ -53,22 +55,54 @@ class DownloaderThread extends Thread implements Serializable
             {
                 semaphore.acquire();
                 url = URL_QUEUE.remove();
-                indexURl_recursive(url, 10, multicastSocket);
-                // System.out.println("Downloader " + thread + " obtained URL: " + url);
+                //indexURl_recursive(url, 10, multicastSocket);
+                DEBUG_testMulticast(url, multicastSocket);
+                System.out.println("Downloader " + thread + " obtained URL: " + url);
             }
         }
         catch (InterruptedException e) {
             System.out.println("Thread " + thread + " was interrupted!");
         } catch (IOException e) {
             System.out.println("Error while creating multicast");
-        } finally {
+        } catch (NoSuchElementException e) {
+            System.out.println("Queue is empty but downlaoder is attempting to remove element");
+        }
+        finally {
             multicastSocket.close();
         }
     }
 
+    String removePontuation(String tokens) {
+        if (tokens == null) return "";
+        return tokens.replaceAll("[.,;:\\\"'?!«»()\\[\\]{}-]", "");
+    }
+
     void indexURl_recursive(String url, int recursive, MulticastSocket multicastSocket)
     {
+        if (recursive == 0)
+            return;
+        try
+        {
+            Document doc = Jsoup.connect(url).get();
+            StringTokenizer tokens = new StringTokenizer(doc.text());
+            // int countTokens = 0;
+            // String citation = "";
+            // WebPage newWebPage = new WebPage(url, doc.title(), 0);
 
+            // Do we count repeated words? For example, if url has word "cube" 2 times, do we count it twice? -> Yes
+            HashSet<String> repeated_words = new HashSet<String>();
+            while (tokens.hasMoreElements())
+            {
+                // no pontuation so we remove it
+                String text = removePontuation(tokens.nextToken().strip().toLowerCase());
+
+                if (repeated_words.contains(text))
+                    continue;
+            }
+        }
+        catch (IllegalArgumentException | IOException e) {
+            // TODO
+        }
     }
 
     void indexURL(String url, MulticastSocket multicastSocket)
@@ -102,7 +136,7 @@ class DownloaderThread extends Thread implements Serializable
             InetAddress multicastAddress = InetAddress.getByName(MULTICAST_ADDRESS);
 
             // Send the byte array via multicast
-            DatagramPacket packet = new DatagramPacket(data, data.length, multicastAddress, PORT);
+            DatagramPacket packet = new DatagramPacket(data, data.length, multicastAddress, MULTICAST_PORT);
             multicastSocket.send(packet);
 
             Elements links = doc.select("a[href]");
@@ -137,5 +171,25 @@ class DownloaderThread extends Thread implements Serializable
         for (String str : visited)
             return Objects.equals(str, url);
         return false;
+    }
+
+    void DEBUG_testMulticast(String url, MulticastSocket multicastSocket) {
+        try
+        {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(url);
+            oos.flush();
+            byte[] data = baos.toByteArray();
+
+            InetAddress multicastAddress = InetAddress.getByName(MULTICAST_ADDRESS);
+
+            // Send the byte array via multicast
+            DatagramPacket packet = new DatagramPacket(data, data.length, multicastAddress, MULTICAST_PORT);
+            multicastSocket.send(packet);
+        }
+        catch (IOException e) {
+            System.out.println("Error while reading stream header");
+        }
     }
 }
