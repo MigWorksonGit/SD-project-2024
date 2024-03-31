@@ -1,6 +1,12 @@
 package project;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.MulticastSocket;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -9,6 +15,9 @@ import project.interfaces.Downloader_I;
 
 public class Downloader
 {
+    private static String MULTICAST_ADDRESS = "230.0.0.1";
+    private static int MULTICAST_PORT = 4446;
+
     public static void main(String[] args) {
         try {
             Downloader_I server = null;
@@ -34,16 +43,46 @@ public class Downloader
                 System.exit(0);
             }
 
+            MulticastSocket multicastSocket = null;
+            String url;
             // Do your stuff
-            while (true)
-            {
-                String msg = server.removeUrl2();
-                System.out.println(msg);
+            try {
+                multicastSocket = new MulticastSocket();
+                while (true)
+                {
+                    url = server.removeUrl2();
+                    DEBUG_testMulticast(url, multicastSocket);
+                    System.out.println("Downloader obtained URL: " + url);
+                }
+            } catch (IOException e) {
+                System.out.println("Error while creating multicast");
+            } 
+            finally {
+                multicastSocket.close();
             }
-
         }
         catch (Exception e) {
             System.out.println("Exception in main: " + e);
+        }
+    }
+
+    static void DEBUG_testMulticast(String url, MulticastSocket multicastSocket) {
+        try
+        {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(url);
+            oos.flush();
+            byte[] data = baos.toByteArray();
+
+            InetAddress multicastAddress = InetAddress.getByName(MULTICAST_ADDRESS);
+
+            // Send the byte array via multicast
+            DatagramPacket packet = new DatagramPacket(data, data.length, multicastAddress, MULTICAST_PORT);
+            multicastSocket.send(packet);
+        }
+        catch (IOException e) {
+            System.out.println("Error while reading stream header");
         }
     }
 }
