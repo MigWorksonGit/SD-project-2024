@@ -3,8 +3,7 @@ package project.interfaces;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-public interface Downloader_I extends Remote
+public interface Barrel_I extends Remote
 {
     public void print_on_server(String msg) throws RemoteException;
-    public String removeUrl2() throws RemoteException;
 }
