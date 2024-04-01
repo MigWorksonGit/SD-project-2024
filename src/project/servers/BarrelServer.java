@@ -3,7 +3,6 @@ package project.servers;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-import project.Barrel;
 import project.GatewayServer;
 import project.interfaces.Barrel_C_I;
 import project.interfaces.Barrel_I;
