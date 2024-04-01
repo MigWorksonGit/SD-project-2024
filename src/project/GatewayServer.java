@@ -4,7 +4,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Semaphore;
 
 import project.interfaces.Barrel_C_I;
 import project.interfaces.Gateway_I;
@@ -20,7 +21,8 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     static BarrelServer barrelServer;
 
     // Queue
-    LinkedBlockingQueue<String> URL_QUEUE = new LinkedBlockingQueue<String>();
+    Semaphore mutex = new Semaphore(0);
+    ConcurrentLinkedQueue<String> URL_QUEUE = new ConcurrentLinkedQueue<String>();
 
     // Server must know its Barrels
     int num_of_barrels = 0;
@@ -74,14 +76,21 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
 
     public void indexUrl(String url) {
         URL_QUEUE.add(url);
+        mutex.release();
     }
 
     public String removeUrl() {
+        String url = "";
         try {
-            return URL_QUEUE.take();
+            while (true) {
+                mutex.acquire();
+                System.out.println("DEBUB semaphore working");
+                return URL_QUEUE.remove();
+            }
         } catch (InterruptedException e) {
-            return "";
+            System.out.println("Thread was interrupted");
         }
+        return url;
     }
 
     public void addBarel(Barrel_C_I bar) {
