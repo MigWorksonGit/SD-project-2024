@@ -22,4 +22,8 @@ public class ClientServer extends UnicastRemoteObject implements Client_I
     public void indexUrl(String url) throws RemoteException {
         server.indexUrl(url);
     }
+
+    public String searchWord(String msg) throws RemoteException {
+        return server.searchWord(msg);
+    }
 }

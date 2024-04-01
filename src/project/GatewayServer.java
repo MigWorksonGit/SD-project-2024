@@ -3,6 +3,7 @@ package project;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import project.interfaces.Gateway_I;
@@ -19,6 +20,10 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
 
     // Queue
     LinkedBlockingQueue<String> URL_QUEUE = new LinkedBlockingQueue<String>();
+
+    // Server must know its Barrels
+    int num_of_barrels = 0;
+    public Barrel barrel = null;
 
     public GatewayServer() throws RemoteException {
         super();
@@ -76,5 +81,14 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         } catch (InterruptedException e) {
             return "";
         }
+    }
+
+    public void addBarel(Barrel bar) {
+        barrel = bar;
+    }
+
+    public String searchWord(String msg) throws RemoteException {
+        // for starters lets chekc barrel 0
+        return barrel.getUrl(msg);
     }
 }

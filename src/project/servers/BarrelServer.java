@@ -3,6 +3,7 @@ package project.servers;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+import project.Barrel;
 import project.GatewayServer;
 import project.interfaces.Barrel_I;
 
@@ -17,5 +18,9 @@ public class BarrelServer extends UnicastRemoteObject implements Barrel_I
 
     public void print_on_server(String msg) throws RemoteException {
         System.out.println(msg);
+    }
+
+    public void subscribeBarrel(Barrel barrel) throws RemoteException {
+        server.barrel = barrel;
     }
 }

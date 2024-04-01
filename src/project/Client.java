@@ -60,7 +60,13 @@ public class Client
                             }
                         }
                     }
-                    
+                    else
+                    if (words[0].equals("search")) {
+                        String msg = server.searchWord(words[1]);
+                        // if (msg.equals("")) System.out.println("Not found");
+                        // else
+                        System.out.println(msg);
+                    }
                     else
                     if (words[0].equals("exit")) {
                         return;
