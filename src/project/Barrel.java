@@ -9,12 +9,12 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
 import java.util.HashSet;
 
+import project.interfaces.Barrel_C_I;
 import project.interfaces.Barrel_I;
 
-public class Barrel
+public class Barrel extends UnicastRemoteObject implements Barrel_C_I
 {
     // Multicast
     static String MULTICAST_ADDRESS = "230.0.0.1";
@@ -39,13 +39,13 @@ public class Barrel
 
             Barrel_I server = null;
             // Must make this also a unicast stuff RMI
-            Barrel myself = new Barrel();
             // Try and give correct error messages and such
             try {
                 try {
                     server = (Barrel_I) Naming.lookup("rmi://localhost:1097/barrel");
                     // SUBSCRIBE BARREL TO SERVER!!!
-                    //server.subscribeBarrel(myself);
+                    Barrel myself  = new Barrel();
+                    server.subscribeBarrel((Barrel_C_I) myself);
                 }
                 catch(MalformedURLException e) {
                     System.out.println("Server Url is incorrectly formed");
@@ -68,6 +68,7 @@ public class Barrel
             try {
                 multicastSocket = new MulticastSocket(MULTICAST_PORT);
                 InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);
+                // joinGroup is depreceated btw
                 multicastSocket.joinGroup(group);
 
                 while (true)
@@ -78,7 +79,7 @@ public class Barrel
 
                     System.out.println("Received packet from " + packet.getAddress().getHostAddress() + ":" + packet.getPort() + " with message:");
                     // Offset is 6 because there is some random bytes before the start of the print message?
-                    String message = new String(packet.getData(), 7, packet.getLength());
+                    String message = new String(packet.getData(), 0, packet.getLength());
                     // if (!index.containsKey(message)) {
                     //     HashSet<String> temp = new HashSet<>();
                     //     temp.add(message);
@@ -86,9 +87,10 @@ public class Barrel
                     // } else {
                     //     index.get(message).add(message);
                     // }
-                    if (!index.contains(message)) {
-                        index.add(message);
-                    }
+                    // THIS DOES NOT WORK
+                    // if (!index.contains(message)) {
+                    //     index.add(message);
+                    // }
 
                     System.out.println(message);
                 }
@@ -104,7 +106,10 @@ public class Barrel
         }
     }
 
-    public String getUrl(String url) {
+    public String getUrl(String url) throws RemoteException {
+        // for (String msg : index) {
+        //     System.out.println(msg);
+        // }
         if (index.contains(url)) {
             return url;
         }

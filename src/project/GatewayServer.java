@@ -6,6 +6,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import project.interfaces.Barrel_C_I;
 import project.interfaces.Gateway_I;
 import project.servers.BarrelServer;
 import project.servers.ClientServer;
@@ -23,7 +24,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
 
     // Server must know its Barrels
     int num_of_barrels = 0;
-    public Barrel barrel = null;
+    public Barrel_C_I barrel = null;
 
     public GatewayServer() throws RemoteException {
         super();
@@ -83,7 +84,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         }
     }
 
-    public void addBarel(Barrel bar) {
+    public void addBarel(Barrel_C_I bar) {
         barrel = bar;
     }
 
