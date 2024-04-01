@@ -10,8 +10,16 @@ import java.net.MulticastSocket;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.HashSet;
+import java.util.StringTokenizer;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+import org.jsoup.nodes.Element;
 
 import project.interfaces.Downloader_I;
+import project.resources.WebPage;
 
 public class Downloader
 {
@@ -69,11 +77,6 @@ public class Downloader
     static void DEBUG_testMulticast(String url, MulticastSocket multicastSocket) {
         try
         {
-            // ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            // ObjectOutputStream oos = new ObjectOutputStream(baos);
-            // oos.writeObject(url);
-            // oos.flush();
-            // byte[] data = baos.toByteArray();
             byte[] data = url.getBytes();
 
             InetAddress multicastAddress = InetAddress.getByName(MULTICAST_ADDRESS);
@@ -84,6 +87,74 @@ public class Downloader
         }
         catch (IOException e) {
             System.out.println("Error while reading stream header");
+        }
+    }
+
+    static String removerPontuação(String text) {
+        if (text == null) return "";
+        String temp = text.replaceAll("[.,;:\\\"'?!«»()\\[\\]{}-]", "");
+        return temp;
+    }
+
+    static void process_url(String url, int recursive, WebPage fatherPage, MulticastSocket multicastSocket)
+    {
+        if (fatherPage != null) {
+            ;
+        }
+        if (recursive == 0) {
+            return;
+        }
+        HashSet<String> visited_words = new HashSet<>();
+        try {
+            Document doc = Jsoup.connect(url).get();
+            StringTokenizer tokens = new StringTokenizer(doc.text());
+            String citation = "";
+
+            String word;
+            WebPage newpage = new WebPage("", url, doc.title(), citation);
+            // Iterate trought all words of the link
+            while (tokens.hasMoreElements())
+            {
+                word = removerPontuação(tokens.nextToken().strip().toLowerCase());
+                if (!word.matches("[a-zA-Z].*")) {
+                    continue;
+                }
+                if (visited_words.contains(word)) {
+                    continue;
+                }
+                WebPage pageObj = new WebPage(word, newpage.url, newpage.title, newpage.citation);
+            
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(baos);
+                oos.writeObject(pageObj);
+                oos.flush();
+                byte[] data = baos.toByteArray();
+
+                InetAddress multicastAddress = InetAddress.getByName(MULTICAST_ADDRESS);
+
+                // Send the byte array via multicast
+                DatagramPacket packet = new DatagramPacket(data, data.length, multicastAddress, MULTICAST_PORT);
+                multicastSocket.send(packet);
+
+                // Check for acknowledgement here!
+
+                visited_words.add(word);
+            }
+
+            Elements links = doc.select("a[href]");
+            String newUrl;
+            for (Element link : links) {
+                newUrl = link.attr("abs:href");
+                // check if visited links contains the new url
+                // if not then add into the queue and increase mutex
+                // maybe create a QueueElement class and not just Strings
+                // -> With url, recursive depth, fatherPage
+            }
+
+
+        } catch (IOException e) {
+            System.out.println("IO exception found in process_url");
+            return;
         }
     }
 }

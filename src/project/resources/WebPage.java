@@ -1,20 +1,24 @@
 package project.resources;
 
-public class WebPage
+import java.io.Serializable;
+
+public class WebPage implements Serializable
 {
+    public String word;
     public String url;
     public String title;
-    public int references;
+    public String citation;
     
-    public WebPage(String url, String title, int references) {
+    public WebPage(String word, String url, String title, String citation) {
+        this.word = word;
         this.url = url;
         this.title = title;
-        this.references = references;
+        this.citation = citation;
     }
 
     @Override
     public String toString()
     {
-        return String.format("Url: %s, Page Title: %s, Num of References: %d", url, title, references);
+        return String.format("Url: %s, Page Title: %s", url, title);
     }
 }
