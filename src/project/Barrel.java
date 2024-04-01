@@ -108,9 +108,9 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     }
 
     public String getUrl(String url) throws RemoteException {
-        for (String msg : index) {
-            System.out.println(msg);
-        }
+        // for (String msg : index) {
+        //     System.out.println(msg);
+        // }
         if (index.contains(url)) {
             return url;
         }

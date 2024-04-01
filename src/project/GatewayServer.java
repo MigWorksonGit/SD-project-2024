@@ -26,7 +26,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
 
     // Server must know its Barrels
     int num_of_barrels = 0;
-    public Barrel_C_I barrel = null;
+    private ArrayList<Barrel_C_I> barrels = new ArrayList<>();
 
     public GatewayServer() throws RemoteException {
         super();
@@ -94,11 +94,11 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     }
 
     public void addBarel(Barrel_C_I bar) {
-        barrel = bar;
+        barrels.add(bar);
     }
 
     public String searchWord(String msg) throws RemoteException {
         // for starters lets chekc barrel 0
-        return barrel.getUrl(msg);
+        return barrels.get(0).getUrl(msg);
     }
 }
