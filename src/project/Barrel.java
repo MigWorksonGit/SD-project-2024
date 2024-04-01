@@ -3,8 +3,10 @@ package project;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.MulticastSocket;
+import java.net.NetworkInterface;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -68,8 +70,7 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
             try {
                 multicastSocket = new MulticastSocket(MULTICAST_PORT);
                 InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);
-                // joinGroup is depreceated btw
-                multicastSocket.joinGroup(group);
+                multicastSocket.joinGroup(new InetSocketAddress(group, 0), NetworkInterface.getByIndex(0));
 
                 while (true)
                 {
@@ -88,9 +89,9 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                     //     index.get(message).add(message);
                     // }
                     // THIS DOES NOT WORK
-                    // if (!index.contains(message)) {
-                    //     index.add(message);
-                    // }
+                    if (!index.contains(message)) {
+                        index.add(message);
+                    }
 
                     System.out.println(message);
                 }
@@ -107,9 +108,9 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     }
 
     public String getUrl(String url) throws RemoteException {
-        // for (String msg : index) {
-        //     System.out.println(msg);
-        // }
+        for (String msg : index) {
+            System.out.println(msg);
+        }
         if (index.contains(url)) {
             return url;
         }

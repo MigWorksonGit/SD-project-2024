@@ -69,11 +69,12 @@ public class Downloader
     static void DEBUG_testMulticast(String url, MulticastSocket multicastSocket) {
         try
         {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(url);
-            oos.flush();
-            byte[] data = baos.toByteArray();
+            // ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            // ObjectOutputStream oos = new ObjectOutputStream(baos);
+            // oos.writeObject(url);
+            // oos.flush();
+            // byte[] data = baos.toByteArray();
+            byte[] data = url.getBytes();
 
             InetAddress multicastAddress = InetAddress.getByName(MULTICAST_ADDRESS);
 
