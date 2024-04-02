@@ -1,6 +1,9 @@
 package project;
 
+import java.io.ByteArrayInputStream;
+import java.io.EOFException;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -15,6 +18,7 @@ import java.util.HashSet;
 
 import project.interfaces.Barrel_C_I;
 import project.interfaces.Barrel_I;
+import project.resources.WebPage;
 
 public class Barrel extends UnicastRemoteObject implements Barrel_C_I
 {
@@ -78,9 +82,28 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                     multicastSocket.receive(packet);
 
-                    System.out.println("Received packet from " + packet.getAddress().getHostAddress() + ":" + packet.getPort() + " with message:");
-                    // Offset is 6 because there is some random bytes before the start of the print message?
-                    String message = new String(packet.getData(), 0, packet.getLength());
+                    // String
+                    // System.out.println("Received packet from " + packet.getAddress().getHostAddress() + ":" + packet.getPort() + " with message:");
+                    // // Offset is 6 because there is some random bytes before the start of the print message?
+                    // String message = new String(packet.getData(), 0, packet.getLength());
+
+                    // UrlQueue Element
+                    ByteArrayInputStream bais = new ByteArrayInputStream(packet.getData());
+                    ObjectInputStream ois = new ObjectInputStream(bais);
+                    WebPage pageObj = null;
+                    try {
+                        pageObj = (WebPage) ois.readObject();
+                    } catch (EOFException e) {
+                        ois.close();
+                        continue;
+                    }
+                    ois.close();
+
+                    String message = pageObj.url;
+                    System.out.println(pageObj);
+
+                    // Change the index to HashMap<String, HashSet<WebPage>>
+
                     // if (!index.containsKey(message)) {
                     //     HashSet<String> temp = new HashSet<>();
                     //     temp.add(message);
@@ -88,11 +111,11 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                     // } else {
                     //     index.get(message).add(message);
                     // }
-                    // THIS DOES NOT WORK
+
+
                     if (!index.contains(message)) {
                         index.add(message);
                     }
-
                     System.out.println(message);
                 }
             }

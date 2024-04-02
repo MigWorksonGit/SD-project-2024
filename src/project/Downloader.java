@@ -66,7 +66,8 @@ public class Downloader
                 while (true)
                 {
                     element = server.removeUrl2();
-                    DEBUG_testMulticast(element.url, multicastSocket);
+                    //DEBUG_testMulticast(element.url, multicastSocket);
+                    DEBUG_testMulticast_element(element, multicastSocket);
                     //process_url(element.url, element.recursion_level, element.fatherPage, multicastSocket, server);
                     System.out.println("Downloader obtained URL: " + element.url);
                 }
@@ -82,7 +83,7 @@ public class Downloader
         }
     }
 
-    static void DEBUG_testMulticast(String url, MulticastSocket multicastSocket) {
+    static void DEBUG_testMulticast_string(String url, MulticastSocket multicastSocket) {
         try {
             byte[] data = url.getBytes();
             InetAddress multicastAddress = InetAddress.getByName(MULTICAST_ADDRESS);
@@ -91,6 +92,26 @@ public class Downloader
             multicastSocket.send(packet);
         }
         catch (IOException e) {
+            System.out.println("Error while reading stream header");
+        }
+    }
+
+    static void DEBUG_testMulticast_element(UrlQueueElement element, MulticastSocket multicastSocket) {
+        try {
+            WebPage pageObj = new WebPage("hello world!", element.url, "Page title <3", "citation");
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(pageObj);
+            oos.flush();
+            byte[] data = baos.toByteArray();
+
+            InetAddress multicastAddress = InetAddress.getByName(MULTICAST_ADDRESS);
+
+            // Send the byte array via multicast
+            DatagramPacket packet = new DatagramPacket(data, data.length, multicastAddress, MULTICAST_PORT);
+            multicastSocket.send(packet);
+        } catch (IOException e) {
             System.out.println("Error while reading stream header");
         }
     }
