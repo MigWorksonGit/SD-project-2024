@@ -14,6 +14,7 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import project.interfaces.Barrel_C_I;
@@ -31,7 +32,7 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     int port;
 
     // Index
-    public static HashSet<String> index = new HashSet<>();
+    public static HashMap<String, HashSet<WebPage>> index = new HashMap<>();
 
     public Barrel() throws RemoteException {
         super();
@@ -84,7 +85,6 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
 
                     // String
                     // System.out.println("Received packet from " + packet.getAddress().getHostAddress() + ":" + packet.getPort() + " with message:");
-                    // // Offset is 6 because there is some random bytes before the start of the print message?
                     // String message = new String(packet.getData(), 0, packet.getLength());
 
                     // UrlQueue Element
@@ -99,24 +99,15 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                     }
                     ois.close();
 
-                    String message = pageObj.url;
                     System.out.println(pageObj);
-
-                    // Change the index to HashMap<String, HashSet<WebPage>>
-
-                    // if (!index.containsKey(message)) {
-                    //     HashSet<String> temp = new HashSet<>();
-                    //     temp.add(message);
-                    //     index.put(message, temp);
-                    // } else {
-                    //     index.get(message).add(message);
-                    // }
-
-
-                    if (!index.contains(message)) {
-                        index.add(message);
+                    if (index.containsKey(pageObj.word)) {
+                        index.get(pageObj.word).add(pageObj);
                     }
-                    System.out.println(message);
+                    else {
+                        HashSet<WebPage> temp_hash = new HashSet<>();
+                        temp_hash.add(pageObj);
+                        index.put(pageObj.word, temp_hash);
+                    }
                 }
             }
             catch (IOException e) {
@@ -134,7 +125,7 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
         // for (String msg : index) {
         //     System.out.println(msg);
         // }
-        if (index.contains(url)) {
+        if (index.containsKey(url)) {
             return url;
         }
         return "";

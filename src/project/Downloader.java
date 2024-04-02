@@ -10,7 +10,6 @@ import java.net.MulticastSocket;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.StringTokenizer;
 
@@ -28,15 +27,10 @@ public class Downloader
     private static String MULTICAST_ADDRESS = "230.0.0.1";
     private static int MULTICAST_PORT = 4446;
 
-    // links visited by this downloader. Maybe put it somewhere else? Like, on the server?
-    // Is this really needed tho?
-    static HashMap<String, HashSet<WebPage>> visited_links = new HashMap<>();
-
     public static void main(String[] args) {
         try {
             Downloader_I server = null;
             // Try and give correct error messages and such
-
             try {
                 try {
                     server = (Downloader_I) Naming.lookup("rmi://localhost:1098/downloader");
@@ -67,17 +61,32 @@ public class Downloader
                 {
                     element = server.removeUrl2();
                     //DEBUG_testMulticast(element.url, multicastSocket);
-                    DEBUG_testMulticast_element(element, multicastSocket);
-                    //process_url(element.url, element.recursion_level, element.fatherPage, multicastSocket, server);
-                    System.out.println("Downloader obtained URL: " + element.url);
+                    //DEBUG_testMulticast_element(element, multicastSocket);
+                    try {
+                        process_url(element.url, element.recursion_level, element.fatherPage, multicastSocket, server);
+                    } catch (IOException e) {
+                        continue;
+                    }
+                    //System.out.println("Downloader obtained URL: " + element.url);
                 }
             } catch (IOException e) {
-                System.out.println("Error while creating multicast");
-            } 
+                System.out.println("Error while creating multicast or server died");
+            }
+            catch (NullPointerException e) {
+                System.out.println("Something thows this" + e);
+                // Idk what it is but try and recover from it
+            }
             finally {
                 multicastSocket.close();
             }
         }
+        // Something causes this to happen and idk what it is
+        // Its because of the url given
+        // One error is:
+        // Exception in main: java.lang.IllegalArgumentException: The supplied URL, 'steam://store/2059170', is malformed. 
+        // Make sure it is an absolute URL, and starts with 'http://' or 'https://'. See https://jsoup.org/cookbook/extracting-data/working-with-urls
+        // So gotta fix that
+        // The worst error is NULL exception
         catch (Exception e) {
             System.out.println("Exception in main: " + e);
         }
@@ -123,12 +132,49 @@ public class Downloader
     }
 
     static void process_url(String url, int recursive, WebPage fatherPage, MulticastSocket multicastSocket, Downloader_I server)
+    throws IOException
     {
+        // This should probably fix all problems
+        // It does not
+        if (url.equals("")) {
+            return;
+        }
+        if (!url.startsWith("http")) {
+            return;
+        }
+        // Instead of asking the server ,why not ask the barrels?
         if (fatherPage != null) {
-            ;
+            try {
+                if (server.containsUrl(url)) {
+                    //System.out.println("Server (fp not null) contais url: " +  url);
+                    server.addPage2Url(url, fatherPage);
+                    return;
+                } else {
+                    HashSet<WebPage> temp_hash = new HashSet<>();
+                    temp_hash.add(fatherPage);
+                    server.putUrl(url, temp_hash);
+                }
+            } catch (RemoteException e) {
+                System.out.println("Error processing url when FatherPage not null");
+                return;
+            }
+        } else {
+            try {
+                if (server.containsUrl(url)) {
+                    //System.out.println("Server (fp is null) contais url: " +  url);
+                    return;
+                }
+                else {
+                    HashSet<WebPage> temp_hash = new HashSet<>();
+                    server.putUrl(url, temp_hash);
+                }
+            } catch (RemoteException e) {
+                System.out.println("Error processing url when FatherPage is null");
+                return;
+            }
         }
         if (recursive == 0) {
-            System.out.println("Recursion finished");
+            //System.out.println("Recursion finished");
             return;
         }
         HashSet<String> visited_words = new HashSet<>();
@@ -149,21 +195,22 @@ public class Downloader
                 if (visited_words.contains(word)) {
                     continue;
                 }
-                System.out.println(word);
+                //System.out.println(word);
 
-                // WebPage pageObj = new WebPage(word, newpage.url, newpage.title, newpage.citation);
+                WebPage pageObj = new WebPage(word, newpage.url, newpage.title, newpage.citation);
             
-                // ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                // ObjectOutputStream oos = new ObjectOutputStream(baos);
-                // oos.writeObject(pageObj);
-                // oos.flush();
-                // byte[] data = baos.toByteArray();
+                // These things here trow a lot of IO exceptions
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(baos);
+                oos.writeObject(pageObj);
+                oos.flush();
+                byte[] data = baos.toByteArray();
 
-                // InetAddress multicastAddress = InetAddress.getByName(MULTICAST_ADDRESS);
+                InetAddress multicastAddress = InetAddress.getByName(MULTICAST_ADDRESS);
 
-                // // Send the byte array via multicast
-                // DatagramPacket packet = new DatagramPacket(data, data.length, multicastAddress, MULTICAST_PORT);
-                // multicastSocket.send(packet);
+                // Send the byte array via multicast
+                DatagramPacket packet = new DatagramPacket(data, data.length, multicastAddress, MULTICAST_PORT);
+                multicastSocket.send(packet);
 
                 // Check for acknowledgement here!
 
@@ -174,18 +221,15 @@ public class Downloader
             String newUrl;
             for (Element link : links) {
                 newUrl = link.attr("abs:href");
-                System.out.println(newUrl);
-                // check if visited links contains the new url
-                // if not then add into the queue and increase mutex
-                // maybe create a QueueElement class and not just Strings
-                // -> With url, recursive depth, fatherPage
-                server.indexUrl2(new UrlQueueElement(newUrl, recursive-1, newpage));
+                if (server.containsUrl(newUrl)) {
+                    server.addPage2Url(newUrl, newpage);
+                } else {
+                    server.indexUrl2(new UrlQueueElement(newUrl, recursive-1, newpage));
+                }
             }
-
-
         } catch (IOException e) {
-            System.out.println("IO exception found in process_url");
-            return;
+            System.out.println("IO exception found in process_url" + e);
+            throw new IOException();
         }
     }
 }

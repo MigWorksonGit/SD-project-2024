@@ -4,12 +4,15 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
 
 import project.interfaces.Barrel_C_I;
 import project.interfaces.Gateway_I;
 import project.resources.UrlQueueElement;
+import project.resources.WebPage;
 import project.servers.BarrelServer;
 import project.servers.ClientServer;
 import project.servers.DownloaderServer;
@@ -28,6 +31,9 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     // Server must know its Barrels
     int num_of_barrels = 0;
     private ArrayList<Barrel_C_I> barrels = new ArrayList<>();
+
+    // links visited by this downloader.
+    public HashMap<String, HashSet<WebPage>> visited_links = new HashMap<>();
 
     public GatewayServer() throws RemoteException {
         super();
@@ -84,7 +90,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         try {
             while (true) {
                 mutex.acquire();
-                System.out.println("DEBUB semaphore working");
+                //System.out.println("DEBUB semaphore working");
                 return URL_QUEUE.remove();
             }
         } catch (InterruptedException e) {
@@ -100,5 +106,17 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     public String searchWord(String msg) throws RemoteException {
         // for starters lets chekc barrel 0
         return barrels.get(0).getUrl(msg);
+    }
+
+    public boolean containsUrl(String url) {
+        return visited_links.containsKey(url);
+    }
+
+    public void addPage2Url(String url, WebPage fatherPage) {
+        visited_links.get(url).add(fatherPage);
+    }
+
+    public void putUrl(String url, HashSet<WebPage> temp_hash) {
+        visited_links.put(url, temp_hash);
     }
 }

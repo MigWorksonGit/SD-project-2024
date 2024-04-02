@@ -11,7 +11,7 @@ import project.resources.UrlQueueElement;
 
 public class Client
 {
-    static int DEBUG_recursion_level = 1;
+    static int DEBUG_recursion_level = 2;
 
     public static void main(String[] args) {
         try {

@@ -19,6 +19,6 @@ public class WebPage implements Serializable
     @Override
     public String toString()
     {
-        return String.format("Url: %s, Page Title: %s", url, title);
+        return String.format("Word: %s, Url: %s, Page Title: %s", word, url, title);
     }
 }
