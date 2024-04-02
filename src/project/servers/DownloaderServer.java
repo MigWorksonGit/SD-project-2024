@@ -5,6 +5,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 import project.GatewayServer;
 import project.interfaces.Downloader_I;
+import project.resources.UrlQueueElement;
 
 public class DownloaderServer extends UnicastRemoteObject implements Downloader_I
 {
@@ -19,7 +20,11 @@ public class DownloaderServer extends UnicastRemoteObject implements Downloader_
         System.out.println(msg);
     }
 
-    public String removeUrl2() throws RemoteException {
+    public UrlQueueElement removeUrl2() throws RemoteException {
         return server.removeUrl();
+    }
+
+    public void indexUrl2(UrlQueueElement element) throws RemoteException {
+        server.indexUrl(element);
     }
 }

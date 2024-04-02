@@ -9,6 +9,7 @@ import java.util.concurrent.Semaphore;
 
 import project.interfaces.Barrel_C_I;
 import project.interfaces.Gateway_I;
+import project.resources.UrlQueueElement;
 import project.servers.BarrelServer;
 import project.servers.ClientServer;
 import project.servers.DownloaderServer;
@@ -22,7 +23,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
 
     // Queue
     Semaphore mutex = new Semaphore(0);
-    ConcurrentLinkedQueue<String> URL_QUEUE = new ConcurrentLinkedQueue<String>();
+    ConcurrentLinkedQueue<UrlQueueElement> URL_QUEUE = new ConcurrentLinkedQueue<>();
 
     // Server must know its Barrels
     int num_of_barrels = 0;
@@ -74,13 +75,12 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         System.out.println(msg);
     }
 
-    public void indexUrl(String url) {
-        URL_QUEUE.add(url);
+    public void indexUrl(UrlQueueElement element) {
+        URL_QUEUE.add(element);
         mutex.release();
     }
 
-    public String removeUrl() {
-        String url = "";
+    public UrlQueueElement removeUrl() {
         try {
             while (true) {
                 mutex.acquire();
@@ -90,7 +90,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         } catch (InterruptedException e) {
             System.out.println("Thread was interrupted");
         }
-        return url;
+        return new UrlQueueElement("failed to obtain url", 0, null);
     }
 
     public void addBarel(Barrel_C_I bar) {

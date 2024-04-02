@@ -5,6 +5,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 import project.GatewayServer;
 import project.interfaces.Client_I;
+import project.resources.UrlQueueElement;
 
 public class ClientServer extends UnicastRemoteObject implements Client_I
 {
@@ -19,8 +20,8 @@ public class ClientServer extends UnicastRemoteObject implements Client_I
         System.out.println(msg);
     }
 
-    public void indexUrl(String url) throws RemoteException {
-        server.indexUrl(url);
+    public void indexUrl(UrlQueueElement element) throws RemoteException {
+        server.indexUrl(element);
     }
 
     public String searchWord(String msg) throws RemoteException {

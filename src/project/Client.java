@@ -7,9 +7,12 @@ import java.rmi.RemoteException;
 import java.util.Scanner;
 
 import project.interfaces.Client_I;
+import project.resources.UrlQueueElement;
 
 public class Client
 {
+    static int DEBUG_recursion_level = 1;
+
     public static void main(String[] args) {
         try {
             Client_I server = null;
@@ -52,8 +55,7 @@ public class Client
                         else {
                             try {
                                 server = (Client_I) Naming.lookup("rmi://localhost:1099/client");
-                                //new URL(words[1]);
-                                server.indexUrl(words[1]);
+                                server.indexUrl(new UrlQueueElement(words[1], DEBUG_recursion_level, null));
                                 // server.print_on_server(words[1]);
                             } catch (MalformedURLException e) {
                                 System.out.println("Url inserido inválido");
