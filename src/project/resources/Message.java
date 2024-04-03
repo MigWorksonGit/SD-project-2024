@@ -16,8 +16,8 @@ public class Message implements Serializable
     public String toString()
     {
         return String.format(
-            "Message with word: %s and WebPage with url: %s and %d references",
-            word, page.url, page.number_of_fathers
+            "Message with word: %s and WebPage with url: %s",
+            word, page.url
         );
     }
 }

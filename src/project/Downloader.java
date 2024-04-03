@@ -61,10 +61,8 @@ public class Downloader
                 while (true)
                 {
                     element = server.removeUrl2();
-                    //DEBUG_testMulticast(element.url, multicastSocket);
-                    //DEBUG_testMulticast_element(element, multicastSocket);
                     try {
-                        process_url(element.url, element.recursion_level, element.fatherPage, multicastSocket, server);
+                        process_url(element.url, element.recursion_level, multicastSocket, server);
                     } catch (IOException e) {
                         continue;
                     }
@@ -93,47 +91,13 @@ public class Downloader
         }
     }
 
-    static void DEBUG_testMulticast_string(String url, MulticastSocket multicastSocket) {
-        try {
-            byte[] data = url.getBytes();
-            InetAddress multicastAddress = InetAddress.getByName(MULTICAST_ADDRESS);
-            // Send the byte array via multicast
-            DatagramPacket packet = new DatagramPacket(data, data.length, multicastAddress, MULTICAST_PORT);
-            multicastSocket.send(packet);
-        }
-        catch (IOException e) {
-            System.out.println("Error while reading stream header");
-        }
-    }
-
-    static void DEBUG_testMulticast_element(UrlQueueElement element, MulticastSocket multicastSocket) {
-        try {
-            WebPage pageObj = new WebPage(element.url, "Poggers", "Citation", 0);
-            Message message2send = new Message("word", pageObj);
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(message2send);
-            oos.flush();
-            byte[] data = baos.toByteArray();
-
-            InetAddress multicastAddress = InetAddress.getByName(MULTICAST_ADDRESS);
-
-            // Send the byte array via multicast
-            DatagramPacket packet = new DatagramPacket(data, data.length, multicastAddress, MULTICAST_PORT);
-            multicastSocket.send(packet);
-        } catch (IOException e) {
-            System.out.println("Error while reading stream header");
-        }
-    }
-
     static String removerPontuação(String text) {
         if (text == null) return "";
         String temp = text.replaceAll("[.,;:\\\"'?!«»()\\[\\]{}-]", "");
         return temp;
     }
 
-    static void process_url(String url, int recursive, WebPage fatherPage, MulticastSocket multicastSocket, Downloader_I server)
+    static void process_url(String url, int recursive, MulticastSocket multicastSocket, Downloader_I server)
     throws IOException
     {
         if (url.equals("")) return;
@@ -150,8 +114,7 @@ public class Downloader
             String citation = "";
 
             String word;
-            WebPage newpage = new WebPage(url, doc.title(), citation, 0);
-            
+            WebPage newpage = new WebPage(url, doc.title(), citation);
             while (tokens.hasMoreElements())
             {
                 word = removerPontuação(tokens.nextToken().strip().toLowerCase());
@@ -177,6 +140,7 @@ public class Downloader
                 multicastSocket.send(packet);
 
                 // Check for acknowledgement here!
+                
                 visited_words.add(word);
             }
             // then obtain the links and do magic
@@ -185,7 +149,7 @@ public class Downloader
             String newUrl;
             for (Element link : links) {
                 newUrl = link.attr("abs:href");
-                server.indexUrl2(new UrlQueueElement(newUrl, recursive-1, newpage));
+                server.indexUrl2(new UrlQueueElement(newUrl, recursive-1));
             }
         } catch (IOException e) {
             System.out.println("IO exception found in process_url" + e);

@@ -10,6 +10,7 @@ import java.util.concurrent.Semaphore;
 
 import project.interfaces.Barrel_C_I;
 import project.interfaces.Gateway_I;
+import project.resources.UrlInfo;
 import project.resources.UrlQueueElement;
 import project.servers.BarrelServer;
 import project.servers.ClientServer;
@@ -91,7 +92,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         } catch (InterruptedException e) {
             System.out.println("Thread was interrupted");
         }
-        return new UrlQueueElement("failed to obtain url", 0, null);
+        return new UrlQueueElement("failed to obtain url", 0);
     }
 
     public void addBarel(Barrel_C_I bar) {
@@ -103,7 +104,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         return barrels.get(0).getUrl(msg);
     }
 
-    public List<String> searchTop10(String term) throws RemoteException {
+    public List<UrlInfo> searchTop10(String term) throws RemoteException {
         return barrels.get(0).searchTop10(term);
     }
 }

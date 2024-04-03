@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import project.interfaces.Client_I;
+import project.resources.UrlInfo;
 import project.resources.UrlQueueElement;
 
 public class Client
@@ -56,7 +57,7 @@ public class Client
                         else {
                             try {
                                 server = (Client_I) Naming.lookup("rmi://localhost:1099/client");
-                                server.indexUrl(new UrlQueueElement(words[1], DEBUG_recursion_level, null));
+                                server.indexUrl(new UrlQueueElement(words[1], DEBUG_recursion_level));
                                 // server.print_on_server(words[1]);
                             } catch (MalformedURLException e) {
                                 System.out.println("Url inserido inválido");
@@ -69,9 +70,9 @@ public class Client
                         // // if (msg.equals("")) System.out.println("Not found");
                         // // else
                         // System.out.println(msg);
-                        List<String> top10 = server.searchTop10(words[1]);
+                        List<UrlInfo> top10 = server.searchTop10(words[1]);
                         System.out.println("URLs containing the term '" + words[1] + "', prioritized by frequency:");
-                        for (String url : top10) {
+                        for (UrlInfo url : top10) {
                             System.out.println(url);
                         }
                     }

@@ -23,6 +23,7 @@ import java.util.Map;
 import project.interfaces.Barrel_C_I;
 import project.interfaces.Barrel_I;
 import project.resources.Message;
+import project.resources.UrlInfo;
 import project.resources.WebPage;
 
 public class Barrel extends UnicastRemoteObject implements Barrel_C_I
@@ -35,8 +36,8 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     String name;
     int port;
 
-    // Index
-    public static Map<String, Map<String, Integer>> invertedIndex = new HashMap<>();
+    // Index -> >word, <url, <title, citation>>>
+    public static Map<String, Map<String, UrlInfo>> invertedIndex = new HashMap<>();
 
     public Barrel() throws RemoteException {
         super();
@@ -87,10 +88,6 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                     multicastSocket.receive(packet);
 
-                    // String
-                    // System.out.println("Received packet from " + packet.getAddress().getHostAddress() + ":" + packet.getPort() + " with message:");
-                    // String message = new String(packet.getData(), 0, packet.getLength());
-
                     //UrlQueue Element
                     ByteArrayInputStream bais = new ByteArrayInputStream(packet.getData());
                     ObjectInputStream ois = new ObjectInputStream(bais);
@@ -108,9 +105,19 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                     WebPage webpage = msg2receive.page;
 
                     // Cooking -> Add Url
-                    invertedIndex.putIfAbsent(word, new HashMap<>());
-                    Map<String, Integer> urlFrequency = invertedIndex.get(word);
-                    urlFrequency.put(webpage.url, urlFrequency.getOrDefault(webpage.url, 0) + 1);
+                    //boolean doesntExist = false;
+                    if (invertedIndex.putIfAbsent(word, new HashMap<>()) == null) {
+                        //System.out.println("Word didnt exist: " + word);
+                        //doesntExist = true;
+                    }
+                    Map<String, UrlInfo> urlInfoMap  = invertedIndex.get(word);
+                    urlInfoMap.putIfAbsent(webpage.url, new UrlInfo(webpage.url, webpage.title, webpage.citation, 0));
+                    UrlInfo info = urlInfoMap.get(webpage.url);
+                    info.termFrequency += 1; // Increment Frequency
+                    // - - -
+                    // invertedIndex.putIfAbsent(word, new HashMap<>());
+                    // Map<String, Integer> urlFrequency = invertedIndex.get(word);
+                    // urlFrequency.put(webpage.url, urlFrequency.getOrDefault(webpage.url, 0) + 1);
                     // - - -
 
                     // if (index.containsKey(word)) {
@@ -147,12 +154,12 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     }
 
     // Search for URLs containing a given term
-    public List<String> searchTop10(String term) throws RemoteException {
-        Map<String, Integer> urlFrequency = invertedIndex.getOrDefault(term, Collections.emptyMap());
+    public List<UrlInfo> searchTop10(String term) throws RemoteException {
+        Map<String, UrlInfo> urlFrequency = invertedIndex.getOrDefault(term, Collections.emptyMap());
 
         // Create a list of URLs sorted by frequency of term occurrences
-        List<String> sortedUrls = new ArrayList<>(urlFrequency.keySet());
-        sortedUrls.sort((url1, url2) -> urlFrequency.get(url2).compareTo(urlFrequency.get(url1)));
+        List<UrlInfo> sortedUrls = new ArrayList<>(urlFrequency.values());
+        sortedUrls.sort((url1, url2) -> url2.termFrequency - url1.termFrequency);
         return sortedUrls;
     }
 }
