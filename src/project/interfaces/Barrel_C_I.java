@@ -6,4 +6,5 @@ import java.rmi.RemoteException;
 public interface Barrel_C_I extends Remote
 {
     public String getUrl(String url) throws RemoteException;
+    public void get_top_10() throws RemoteException;
 }

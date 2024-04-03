@@ -130,4 +130,12 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
         }
         return "";
     }
+
+    public void get_top_10() throws RemoteException{
+        //co
+        // return top 10
+        //criar else if cliente
+        //return string
+    }
 }
+
