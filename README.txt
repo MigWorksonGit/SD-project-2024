@@ -9,3 +9,9 @@ exit to exit cmd into powershell
 
 javac -cp ".;lib/*" -d bin src/project/*.java src/project/interfaces/*.java src/project/resources/*.java src/project/servers/*.java
 java -cp "bin;lib/*" project.<main_class_name_here>
+
+
+Webpage has: url, title, citation, number_of_fathers
+I want to send:
+word,
+Index: word, List<url, title, citation, number_of_fathers> -> word, List<Webpage>

@@ -14,11 +14,15 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 import project.interfaces.Barrel_C_I;
 import project.interfaces.Barrel_I;
+import project.resources.Message;
 import project.resources.WebPage;
 
 public class Barrel extends UnicastRemoteObject implements Barrel_C_I
@@ -32,7 +36,7 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     int port;
 
     // Index
-    public static HashMap<String, HashSet<WebPage>> index = new HashMap<>();
+    public static Map<String, Map<String, Integer>> invertedIndex = new HashMap<>();
 
     public Barrel() throws RemoteException {
         super();
@@ -87,27 +91,38 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                     // System.out.println("Received packet from " + packet.getAddress().getHostAddress() + ":" + packet.getPort() + " with message:");
                     // String message = new String(packet.getData(), 0, packet.getLength());
 
-                    // UrlQueue Element
+                    //UrlQueue Element
                     ByteArrayInputStream bais = new ByteArrayInputStream(packet.getData());
                     ObjectInputStream ois = new ObjectInputStream(bais);
-                    WebPage pageObj = null;
+                    Message msg2receive = null;
                     try {
-                        pageObj = (WebPage) ois.readObject();
+                        msg2receive = (Message) ois.readObject();
                     } catch (EOFException e) {
                         ois.close();
                         continue;
                     }
                     ois.close();
 
-                    System.out.println(pageObj);
-                    if (index.containsKey(pageObj.word)) {
-                        index.get(pageObj.word).add(pageObj);
-                    }
-                    else {
-                        HashSet<WebPage> temp_hash = new HashSet<>();
-                        temp_hash.add(pageObj);
-                        index.put(pageObj.word, temp_hash);
-                    }
+                    System.out.println(msg2receive);
+                    String word = msg2receive.word;
+                    WebPage webpage = msg2receive.page;
+
+                    // Cooking -> Add Url
+                    invertedIndex.putIfAbsent(word, new HashMap<>());
+                    Map<String, Integer> urlFrequency = invertedIndex.get(word);
+                    urlFrequency.put(webpage.url, urlFrequency.getOrDefault(webpage.url, 0) + 1);
+                    // - - -
+
+                    // if (index.containsKey(word)) {
+                    //     index.get(word).add(webpage);
+                    // }
+                    // else {
+                    //     HashSet<WebPage> temp_hash = new HashSet<>();
+                    //     temp_hash.add(webpage);
+                    //     index.put(word, temp_hash);
+                    // }
+
+                    // Multicast can send an ack that the word already exists
                 }
             }
             catch (IOException e) {
@@ -125,17 +140,20 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
         // for (String msg : index) {
         //     System.out.println(msg);
         // }
-        if (index.containsKey(url)) {
-            return url;
-        }
+        // if (index.containsKey(url)) {
+        //     return url;
+        // }
         return "";
     }
 
-    public void get_top_10() throws RemoteException{
-        //co
-        // return top 10
-        //criar else if cliente
-        //return string
+    // Search for URLs containing a given term
+    public List<String> searchTop10(String term) throws RemoteException {
+        Map<String, Integer> urlFrequency = invertedIndex.getOrDefault(term, Collections.emptyMap());
+
+        // Create a list of URLs sorted by frequency of term occurrences
+        List<String> sortedUrls = new ArrayList<>(urlFrequency.keySet());
+        sortedUrls.sort((url1, url2) -> urlFrequency.get(url2).compareTo(urlFrequency.get(url1)));
+        return sortedUrls;
     }
 }
 

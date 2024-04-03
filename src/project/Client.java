@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.Scanner;
 
 import project.interfaces.Client_I;
@@ -64,10 +65,15 @@ public class Client
                     }
                     else
                     if (words[0].equals("search")) {
-                        String msg = server.searchWord(words[1]);
-                        // if (msg.equals("")) System.out.println("Not found");
-                        // else
-                        System.out.println(msg);
+                        // String msg = server.searchWord(words[1]);
+                        // // if (msg.equals("")) System.out.println("Not found");
+                        // // else
+                        // System.out.println(msg);
+                        List<String> top10 = server.searchTop10(words[1]);
+                        System.out.println("URLs containing the term '" + words[1] + "', prioritized by frequency:");
+                        for (String url : top10) {
+                            System.out.println(url);
+                        }
                     }
                     else
                     if (words[0].equals("exit")) {

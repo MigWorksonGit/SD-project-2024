@@ -2,6 +2,7 @@ package project.servers;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.List;
 
 import project.GatewayServer;
 import project.interfaces.Client_I;
@@ -26,5 +27,9 @@ public class ClientServer extends UnicastRemoteObject implements Client_I
 
     public String searchWord(String msg) throws RemoteException {
         return server.searchWord(msg);
+    }
+
+    public List<String> searchTop10(String term) throws RemoteException {
+        return server.searchTop10(term);
     }
 }

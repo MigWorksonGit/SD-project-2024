@@ -19,6 +19,7 @@ import org.jsoup.select.Elements;
 import org.jsoup.nodes.Element;
 
 import project.interfaces.Downloader_I;
+import project.resources.Message;
 import project.resources.UrlQueueElement;
 import project.resources.WebPage;
 
@@ -107,11 +108,12 @@ public class Downloader
 
     static void DEBUG_testMulticast_element(UrlQueueElement element, MulticastSocket multicastSocket) {
         try {
-            WebPage pageObj = new WebPage("hello world!", element.url, "Page title <3", "citation");
+            WebPage pageObj = new WebPage(element.url, "Poggers", "Citation", 0);
+            Message message2send = new Message("word", pageObj);
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(pageObj);
+            oos.writeObject(message2send);
             oos.flush();
             byte[] data = baos.toByteArray();
 
@@ -134,49 +136,13 @@ public class Downloader
     static void process_url(String url, int recursive, WebPage fatherPage, MulticastSocket multicastSocket, Downloader_I server)
     throws IOException
     {
-        // This should probably fix all problems
-        // It does not
-        if (url.equals("")) {
-            return;
-        }
-        if (!url.startsWith("http")) {
-            return;
-        }
-        // Instead of asking the server ,why not ask the barrels?
-        if (fatherPage != null) {
-            try {
-                if (server.containsUrl(url)) {
-                    //System.out.println("Server (fp not null) contais url: " +  url);
-                    server.addPage2Url(url, fatherPage);
-                    return;
-                } else {
-                    HashSet<WebPage> temp_hash = new HashSet<>();
-                    temp_hash.add(fatherPage);
-                    server.putUrl(url, temp_hash);
-                }
-            } catch (RemoteException e) {
-                System.out.println("Error processing url when FatherPage not null");
-                return;
-            }
-        } else {
-            try {
-                if (server.containsUrl(url)) {
-                    //System.out.println("Server (fp is null) contais url: " +  url);
-                    return;
-                }
-                else {
-                    HashSet<WebPage> temp_hash = new HashSet<>();
-                    server.putUrl(url, temp_hash);
-                }
-            } catch (RemoteException e) {
-                System.out.println("Error processing url when FatherPage is null");
-                return;
-            }
-        }
-        if (recursive == 0) {
-            //System.out.println("Recursion finished");
-            return;
-        }
+        if (url.equals("")) return;
+        if (!url.startsWith("https://")) return;
+        if (recursive == 0) return;
+
+        // check if url already exists with multicast ?
+        // for now lets just send it -> check only if father not null
+
         HashSet<String> visited_words = new HashSet<>();
         try {
             Document doc = Jsoup.connect(url).get();
@@ -184,8 +150,8 @@ public class Downloader
             String citation = "";
 
             String word;
-            WebPage newpage = new WebPage("", url, doc.title(), citation);
-            // Iterate trought all words of the link
+            WebPage newpage = new WebPage(url, doc.title(), citation, 0);
+            
             while (tokens.hasMoreElements())
             {
                 word = removerPontuação(tokens.nextToken().strip().toLowerCase());
@@ -195,14 +161,12 @@ public class Downloader
                 if (visited_words.contains(word)) {
                     continue;
                 }
-                //System.out.println(word);
-
-                WebPage pageObj = new WebPage(word, newpage.url, newpage.title, newpage.citation);
+                Message message2send = new Message(word, newpage);
             
                 // These things here trow a lot of IO exceptions
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 ObjectOutputStream oos = new ObjectOutputStream(baos);
-                oos.writeObject(pageObj);
+                oos.writeObject(message2send);
                 oos.flush();
                 byte[] data = baos.toByteArray();
 
@@ -213,23 +177,122 @@ public class Downloader
                 multicastSocket.send(packet);
 
                 // Check for acknowledgement here!
-
                 visited_words.add(word);
             }
+            // then obtain the links and do magic
 
             Elements links = doc.select("a[href]");
             String newUrl;
             for (Element link : links) {
                 newUrl = link.attr("abs:href");
-                if (server.containsUrl(newUrl)) {
-                    server.addPage2Url(newUrl, newpage);
-                } else {
-                    server.indexUrl2(new UrlQueueElement(newUrl, recursive-1, newpage));
-                }
+                server.indexUrl2(new UrlQueueElement(newUrl, recursive-1, newpage));
             }
         } catch (IOException e) {
             System.out.println("IO exception found in process_url" + e);
             throw new IOException();
         }
     }
+
+    // static void process_url_old(String url, int recursive, WebPage fatherPage, MulticastSocket multicastSocket, Downloader_I server)
+    // throws IOException
+    // {
+    //     // This should probably fix all problems
+    //     // It does not
+    //     if (url.equals("")) {
+    //         return;
+    //     }
+    //     if (!url.startsWith("http")) {
+    //         return;
+    //     }
+    //     // Instead of asking the server ,why not ask the barrels?
+    //     // This needs to be done again
+    //     if (fatherPage != null) {
+    //         try {
+    //             if (server.containsUrl(url)) {
+    //                 //System.out.println("Server (fp not null) contais url: " +  url);
+    //                 server.addPage2Url(url, fatherPage);
+    //                 return;
+    //             } else {
+    //                 HashSet<WebPage> temp_hash = new HashSet<>();
+    //                 temp_hash.add(fatherPage);
+    //                 server.putUrl(url, temp_hash);
+    //             }
+    //         } catch (RemoteException e) {
+    //             System.out.println("Error processing url when FatherPage not null");
+    //             return;
+    //         }
+    //     } else {
+    //         try {
+    //             if (server.containsUrl(url)) {
+    //                 //System.out.println("Server (fp is null) contais url: " +  url);
+    //                 return;
+    //             }
+    //             else {
+    //                 HashSet<WebPage> temp_hash = new HashSet<>();
+    //                 server.putUrl(url, temp_hash);
+    //             }
+    //         } catch (RemoteException e) {
+    //             System.out.println("Error processing url when FatherPage is null");
+    //             return;
+    //         }
+    //     }
+    //     if (recursive == 0) {
+    //         //System.out.println("Recursion finished");
+    //         return;
+    //     }
+    //     HashSet<String> visited_words = new HashSet<>();
+    //     try {
+    //         Document doc = Jsoup.connect(url).get();
+    //         StringTokenizer tokens = new StringTokenizer(doc.text());
+    //         String citation = "";
+
+    //         String word;
+    //         WebPage newpage = new WebPage(url, doc.title(), citation, 0);
+    //         // Iterate trought all words of the link
+    //         while (tokens.hasMoreElements())
+    //         {
+    //             word = removerPontuação(tokens.nextToken().strip().toLowerCase());
+    //             if (!word.matches("[a-zA-Z].*")) {
+    //                 continue;
+    //             }
+    //             if (visited_words.contains(word)) {
+    //                 continue;
+    //             }
+    //             //System.out.println(word);
+
+    //             Message message2send = new Message(word, newpage);
+            
+    //             // These things here trow a lot of IO exceptions
+    //             ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    //             ObjectOutputStream oos = new ObjectOutputStream(baos);
+    //             oos.writeObject(message2send);
+    //             oos.flush();
+    //             byte[] data = baos.toByteArray();
+
+    //             InetAddress multicastAddress = InetAddress.getByName(MULTICAST_ADDRESS);
+
+    //             // Send the byte array via multicast
+    //             DatagramPacket packet = new DatagramPacket(data, data.length, multicastAddress, MULTICAST_PORT);
+    //             multicastSocket.send(packet);
+
+    //             // Check for acknowledgement here!
+
+    //             visited_words.add(word);
+    //         }
+
+    //         Elements links = doc.select("a[href]");
+    //         String newUrl;
+    //         for (Element link : links) {
+    //             newUrl = link.attr("abs:href");
+    //             if (server.containsUrl(newUrl)) {
+    //                 server.addPage2Url(newUrl, newpage);
+    //             } else {
+    //                 server.indexUrl2(new UrlQueueElement(newUrl, recursive-1, newpage));
+    //             }
+    //         }
+    //     } catch (IOException e) {
+    //         System.out.println("IO exception found in process_url" + e);
+    //         throw new IOException();
+    //     }
+    // }
 }
