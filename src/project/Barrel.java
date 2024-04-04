@@ -142,13 +142,18 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     }
 
     // Search for URLs containing a given term
-    public List<UrlInfo> searchTop10(String term) throws RemoteException {
-        Map<String, UrlInfo> urlFrequency = invertedIndex.getOrDefault(term, Collections.emptyMap());
-
-        // Create a list of URLs sorted by frequency of term occurrences
-        List<UrlInfo> sortedUrls = new ArrayList<>(urlFrequency.values());
-        sortedUrls.sort((url1, url2) -> url2.termFrequency - url1.termFrequency);
-        return sortedUrls;
+    public List<UrlInfo> searchTop10(String[] term) throws RemoteException {
+        // Currently this only sorts by frequency
+        // Add smth to make it also sort if an url has more of the intented words in it
+        // More terms = higher priority
+        List<UrlInfo> list = new ArrayList<>();
+        for (int i = 1; i < term.length; i++) {
+            Map<String, UrlInfo> urlFrequency = invertedIndex.getOrDefault(term[i], Collections.emptyMap());
+            List<UrlInfo> urls = new ArrayList<>(urlFrequency.values());
+            list.addAll(urls);
+        }
+        list.sort((url1, url2) -> url2.termFrequency - url1.termFrequency);
+        return list;
     }
 }
 

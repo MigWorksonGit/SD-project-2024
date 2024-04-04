@@ -104,7 +104,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         return barrels.get(0).getUrl(msg);
     }
 
-    public List<UrlInfo> searchTop10(String term) throws RemoteException {
+    public List<UrlInfo> searchTop10(String[] term) throws RemoteException {
         return barrels.get(0).searchTop10(term);
     }
 }

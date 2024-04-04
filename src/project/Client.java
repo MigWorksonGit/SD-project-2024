@@ -58,24 +58,24 @@ public class Client
                             try {
                                 server = (Client_I) Naming.lookup("rmi://localhost:1099/client");
                                 server.indexUrl(new UrlQueueElement(words[1], DEBUG_recursion_level));
-                                // server.print_on_server(words[1]);
                             } catch (MalformedURLException e) {
                                 System.out.println("Url inserido inválido");
                             }
                         }
                     }
+
                     else
                     if (words[0].equals("search")) {
-                        // String msg = server.searchWord(words[1]);
-                        // // if (msg.equals("")) System.out.println("Not found");
-                        // // else
-                        // System.out.println(msg);
-                        List<UrlInfo> top10 = server.searchTop10(words[1]);
+                        List<UrlInfo> top10 = server.searchTop10(words);
                         System.out.println("URLs containing the term '" + words[1] + "', prioritized by frequency:");
+                        int counter = 0;
                         for (UrlInfo url : top10) {
                             System.out.println(url);
+                            counter += 1;
+                            if (counter == 10) break;
                         }
                     }
+                    
                     else
                     if (words[0].equals("exit")) {
                         return;

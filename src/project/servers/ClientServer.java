@@ -30,7 +30,7 @@ public class ClientServer extends UnicastRemoteObject implements Client_I
         return server.searchWord(msg);
     }
 
-    public List<UrlInfo> searchTop10(String term) throws RemoteException {
+    public List<UrlInfo> searchTop10(String[] term) throws RemoteException {
         return server.searchTop10(term);
     }
 }
