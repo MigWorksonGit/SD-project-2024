@@ -140,6 +140,7 @@ public class Downloader
                 multicastSocket.send(packet);
 
                 // Check for acknowledgement here!
+                // Needs to be sent to THIS downloader. Be aware of that.
                 
                 visited_words.add(word);
             }

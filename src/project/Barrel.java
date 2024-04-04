@@ -36,7 +36,9 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     String name;
     int port;
 
-    // Index -> >word, <url, <title, citation>>>
+    //  mais relevante se tiver mais ligações **de** outras páginas
+    // invertedIndex:
+    //              word : Map<url, UrlInfo>
     public static Map<String, Map<String, UrlInfo>> invertedIndex = new HashMap<>();
 
     public Barrel() throws RemoteException {
@@ -82,7 +84,7 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                 InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);
                 multicastSocket.joinGroup(new InetSocketAddress(group, 0), NetworkInterface.getByIndex(0));
 
-                while (true)
+                while (true) 
                 {
                     byte[] buffer = new byte[1024];
                     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
@@ -104,31 +106,17 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                     String word = msg2receive.word;
                     WebPage webpage = msg2receive.page;
 
-                    // Cooking -> Add Url
-                    //boolean doesntExist = false;
-                    if (invertedIndex.putIfAbsent(word, new HashMap<>()) == null) {
-                        //System.out.println("Word didnt exist: " + word);
-                        //doesntExist = true;
-                    }
-                    Map<String, UrlInfo> urlInfoMap  = invertedIndex.get(word);
-                    urlInfoMap.putIfAbsent(webpage.url, new UrlInfo(webpage.url, webpage.title, webpage.citation, 0));
-                    UrlInfo info = urlInfoMap.get(webpage.url);
-                    info.termFrequency += 1; // Increment Frequency
-                    // - - -
-                    // invertedIndex.putIfAbsent(word, new HashMap<>());
-                    // Map<String, Integer> urlFrequency = invertedIndex.get(word);
-                    // urlFrequency.put(webpage.url, urlFrequency.getOrDefault(webpage.url, 0) + 1);
-                    // - - -
-
-                    // if (index.containsKey(word)) {
-                    //     index.get(word).add(webpage);
-                    // }
-                    // else {
-                    //     HashSet<WebPage> temp_hash = new HashSet<>();
-                    //     temp_hash.add(webpage);
-                    //     index.put(word, temp_hash);
-                    // }
-
+                    // add if word does not exist
+                    invertedIndex.putIfAbsent(word, new HashMap<>());
+                    // get the Map of the word
+                    Map<String, UrlInfo> urlMap = invertedIndex.get(word);
+                    urlMap.putIfAbsent(
+                        webpage.url,
+                        new UrlInfo(webpage.url, webpage.title, webpage.citation, 0)
+                    );
+                    UrlInfo info = urlMap.get(webpage.url);
+                    // Increment frequency
+                    info.termFrequency += 1; 
                     // Multicast can send an ack that the word already exists
                 }
             }
