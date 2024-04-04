@@ -16,12 +16,22 @@ public class UrlInfo implements Serializable
         this.termFrequency = tFrequency;
     }
 
+    // @Override
+    // public String toString()
+    // {
+    //     return String.format(
+    //         "%s\n%s\n%s",
+    //         title, url, citation
+    //     );
+    // }
+
+    // Debug print
     @Override
     public String toString()
     {
         return String.format(
-            "Page with url: %s, title: %s, citation: %s, frequency: %d",
-            url, title, citation, termFrequency
+            "-----\n%s\n%s\n%s\n%d\n-----",
+            title, url, citation, termFrequency
         );
     }
 }

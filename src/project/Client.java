@@ -69,11 +69,23 @@ public class Client
                         List<UrlInfo> top10 = server.searchTop10(words);
                         System.out.println("URLs containing the term '" + words[1] + "', prioritized by frequency:");
                         int counter = 0;
-                        for (UrlInfo url : top10) {
-                            System.out.println(url);
-                            counter += 1;
-                            if (counter == 10) break;
-                        }
+                        loop:
+                        do {
+                            for (int i = counter; i < counter+10; i++) {
+                                if (i == top10.size()) break loop;
+                                System.out.println(top10.get(i));
+                            }
+                            System.out.println("Input \"next\" for next set of pages, \"end\" to stop");
+                            input = sc.nextLine();
+                            if (input.equals("end")) break;
+                            else if (input.equals("next")) {
+                                counter += 10;
+                            }
+                            else {
+                                System.out.println("Wrong input, backing out...");
+                                break;
+                            }
+                        } while (true);
                     }
                     
                     else
