@@ -174,12 +174,19 @@ public class Downloader
                 oos.flush();
                 byte[] data = baos.toByteArray();
 
-                InetAddress multicastAddress = InetAddress.getByName(MULTICAST_ADDRESS);
+                InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);
 
                 // Send the byte array via multicast
-                DatagramPacket packet = new DatagramPacket(data, data.length, multicastAddress, MULTICAST_PORT);
+                DatagramPacket packet = new DatagramPacket(data, data.length, group, MULTICAST_PORT);
                 multicastSocket.send(packet);
-                
+
+                // Receive acknowledgement. If not received, send again -> do this
+                byte[] buf = new byte[124];
+                DatagramPacket packetReceiver = new DatagramPacket(buf, buf.length, group, MULTICAST_PORT);
+
+                multicastSocket.setSoTimeout(1000);
+                multicastSocket.receive(packetReceiver);
+                System.out.println("Received Acknowledgement of word: " + word);
                 visited_words.add(word);
             }
             // then obtain the links and do magic

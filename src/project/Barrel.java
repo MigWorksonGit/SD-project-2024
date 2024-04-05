@@ -145,6 +145,7 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
 
                 while (true) 
                 {
+                    // Receive packet
                     byte[] buffer = new byte[1024];
                     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                     multicastSocket.receive(packet);
@@ -179,12 +180,15 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                     // Add url to pages referencing this page
                     info.urlsPointing2this.add(webpage.fatherUrl);
 
-                    // pWriter.printf(
-                    //     "%s|%s|%s|%s|%d|%s\n",
-                    //     word, webpage.url, webpage.title, webpage.citation, info.termFrequency, webpage.fatherUrl
-                    // );
+                    // Writing to file
                     bWriter.write(word + "|" + webpage.url + "|" + webpage.title + "|" + webpage.citation + "|" + info.termFrequency + "|" + webpage.fatherUrl);
                     bWriter.newLine();
+
+                    // Send ACK that packet was received suceffuly
+                    String ack = word;
+                    byte[] bufferAck = ack.getBytes();
+                    DatagramPacket pack2send = new DatagramPacket(bufferAck, bufferAck.length, packet.getAddress(), packet.getPort());
+                    multicastSocket.send(pack2send);
                 }
             }
             catch (IOException e) {
