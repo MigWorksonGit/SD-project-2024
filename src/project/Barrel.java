@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import project.interfaces.Barrel_C_I;
 import project.interfaces.Barrel_I;
@@ -41,7 +42,7 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     //  mais relevante se tiver mais ligações **de** outras páginas
     // invertedIndex:
     //              word : Map<url, UrlInfo>
-    public static Map<String, Map<String, UrlInfo>> invertedIndex = new HashMap<>();
+    public static Map<String, Map<String, UrlInfo>> invertedIndex = new ConcurrentHashMap<>();
 
     public Barrel() throws RemoteException {
         super();
@@ -134,7 +135,6 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
         }
     }
 
-    // This also has ConcurrenyIssue. Try to copy function downwards to avoid that
     public List<String> getUrlsConnected2this(String url) throws RemoteException {
         List<String> list = new ArrayList<>();
         Set<String> strings = new HashSet<>();
