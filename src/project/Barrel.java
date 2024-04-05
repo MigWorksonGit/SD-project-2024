@@ -1,7 +1,12 @@
 package project;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
@@ -36,8 +41,10 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     static int MULTICAST_PORT = 4446;
 
     // Barrel variables
-    String name;
-    int port;
+    static String name;
+    public void setName(String newName) throws RemoteException {
+        name = newName;
+    }
 
     //  mais relevante se tiver mais ligações **de** outras páginas
     // invertedIndex:
@@ -50,10 +57,6 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
 
     public static void main(String[] args) {
         try {
-            // create new file
-            // index will save all current data taken from downloader
-            // once indexing is done, we save to the file?
-
             Barrel_I server = null;
             // Must make this also a unicast stuff RMI
             // Try and give correct error messages and such
@@ -75,11 +78,64 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                     System.out.println("Closing...");
                     System.exit(0);
                 }
-                System.out.println("Barrel is ready");
+                System.out.println("Barrel " + name + " is ready");
             } catch (RemoteException e) {
                 System.out.println("Error comunicating to the server");
                 System.exit(0);
             }
+
+            // create or check if file exists
+            String folderPath = "src/project/barrel_files";
+            String filename = name + ".txt";
+            File folder = new File(folderPath);
+            if (!folder.exists())
+                folder.mkdirs();
+            File file = new File(folder, filename);
+            if (!file.exists()) {
+                try {
+                    file.createNewFile();
+                } catch (IOException e) {
+                    System.out.println("Could not create file. Exiting out...");
+                    System.exit(0);
+                }
+            }
+            else {
+                // unusual line terminators?
+                try {
+                    FileReader fReader = new FileReader(file);
+                    BufferedReader bReader = new BufferedReader(fReader);
+                    String line;
+                    while((line = bReader.readLine()) != null) {
+                        String[] parts = line.split("\\|");
+                        if (parts.length == 6) {
+                            String word1 = parts[0];
+                            String url1 = parts[1];
+                            String title1 = parts[2];
+                            String citation1 = parts[3];
+                            int frequency1 = Integer.parseInt(parts[4]);
+                            String father1 = parts[5];
+                            invertedIndex.putIfAbsent(word1, new HashMap<>());
+                            Map<String, UrlInfo> urlMap = invertedIndex.get(word1);
+                            urlMap.putIfAbsent(
+                                url1,
+                                new UrlInfo(url1, title1, citation1, frequency1)
+                            );
+                            UrlInfo info = urlMap.get(url1);
+                            // Increment frequency
+                            info.termFrequency += 1; 
+                            // Add url to pages referencing this page
+                            info.urlsPointing2this.add(father1);
+                        }
+                    }
+                    bReader.close();
+                } catch (IOException e) {
+                    System.out.println("Could not read from file. Exiting out...");
+                    System.exit(0);
+                }
+            }
+
+            FileWriter fWriter = new FileWriter(file, true);
+            BufferedWriter bWriter = new BufferedWriter(fWriter);
 
             MulticastSocket multicastSocket = null;
             try {
@@ -122,12 +178,20 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                     info.termFrequency += 1; 
                     // Add url to pages referencing this page
                     info.urlsPointing2this.add(webpage.fatherUrl);
+
+                    // pWriter.printf(
+                    //     "%s|%s|%s|%s|%d|%s\n",
+                    //     word, webpage.url, webpage.title, webpage.citation, info.termFrequency, webpage.fatherUrl
+                    // );
+                    bWriter.write(word + "|" + webpage.url + "|" + webpage.title + "|" + webpage.citation + "|" + info.termFrequency + "|" + webpage.fatherUrl);
+                    bWriter.newLine();
                 }
             }
             catch (IOException e) {
                 throw new RuntimeException(e);
             } finally {
                 multicastSocket.close();
+                bWriter.close();
             }
         }
         catch (Exception e) {
@@ -167,6 +231,13 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
         }
         list.sort((url1, url2) -> url2.termFrequency - url1.termFrequency);
         return list;
+    }
+
+    // This is a semi hack.
+    // If the barrel is not Alive it returns RemoteException.
+    // the return variable will not be catched. We just care about the exception.
+    public boolean isAlive() throws RemoteException {
+        return true;
     }
 }
 

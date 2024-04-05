@@ -112,7 +112,7 @@ public class Downloader
             StringTokenizer tokens = new StringTokenizer(doc.text());
 
             String word;
-            WebPage newpage = new WebPage(url, doc.title(), "no result", father_url);
+            WebPage newpage = new WebPage(url, doc.title(), "no_result", father_url);
             while (tokens.hasMoreElements())
             {
                 word = removerPontuação(tokens.nextToken().strip().toLowerCase());
@@ -123,7 +123,7 @@ public class Downloader
                     continue;
                 }
 
-                newpage.citation = "no result";
+                newpage.citation = "no_result";
                 // get paragraph with word
                 Element pContainsWord = null;
                 for (Element p : doc.select("p")) {

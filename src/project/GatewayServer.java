@@ -95,8 +95,31 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         return new UrlQueueElement("failed to obtain url", 0, "-1");
     }
 
-    public void addBarel(Barrel_C_I bar) {
+    public void addBarel(Barrel_C_I bar) throws RemoteException {
+        // This is kinda slow due to catching exception but works as intended
+        if (num_of_barrels == 0) {
+            barrels.add(bar);
+            barrels.get(0).setName("barrel_0");
+            num_of_barrels++;
+            return;
+        }
+        for (int i = 0; i < num_of_barrels; i++) {
+            try {
+                barrels.get(i).isAlive();
+            } catch (IndexOutOfBoundsException e) {
+                System.out.println("This is out of bounds " + i);
+                return;
+            } catch (RemoteException e) {
+                System.out.println("Barrel " + i + " no longer exists");
+                barrels.set(i, bar);
+                barrels.get(i).setName("barrel_" + i);
+                return;
+            }
+        }
+        // if they are all alive
         barrels.add(bar);
+        barrels.get(num_of_barrels).setName("barrel_" + num_of_barrels);
+        num_of_barrels++;
     }
 
     public List<String> getUrlsConnected2this(String msg) throws RemoteException {
@@ -104,7 +127,22 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         return barrels.get(0).getUrlsConnected2this(msg);
     }
 
+    // If remote exception is received, it means the barrel on the current index
+    // has been deactivated
     public List<UrlInfo> searchTop10(String[] term) throws RemoteException {
-        return barrels.get(0).searchTop10(term);
+        try {
+            return barrels.get(0).searchTop10(term);
+        } catch (RemoteException e) {
+            System.out.println("Hahaha remote exception " + e);
+            return null;
+        }
+    }
+
+    // If index 0 is out of bounds: No existing barrels
+    // If RemoteException is received
+    public String getAdminInfo() throws RemoteException {
+        StringBuilder info = new StringBuilder();
+
+        return info.toString().toLowerCase();
     }
 }

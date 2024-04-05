@@ -94,6 +94,11 @@ public class Client
                         }
                     }
                     else
+                    if (words[0].equals("admin")) {
+                        // Show admin page
+                        
+                    }
+                    else
                     if (words[0].equals("exit")) {
                         return;
                     }
