@@ -26,8 +26,8 @@ public class ClientServer extends UnicastRemoteObject implements Client_I
         server.indexUrl(element);
     }
 
-    public String searchWord(String msg) throws RemoteException {
-        return server.searchWord(msg);
+    public List<String> getUrlsConnected2this(String msg) throws RemoteException {
+        return server.getUrlsConnected2this(msg);
     }
 
     public List<UrlInfo> searchTop10(String[] term) throws RemoteException {

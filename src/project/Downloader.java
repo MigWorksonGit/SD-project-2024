@@ -64,7 +64,7 @@ public class Downloader
                 {
                     element = server.removeUrl2();
                     try {
-                        process_url(element.url, element.recursion_level, multicastSocket, server);
+                        process_url(element.url, element.father_url, element.recursion_level, multicastSocket, server);
                     } catch (IOException e) {
                         continue;
                     }
@@ -99,7 +99,7 @@ public class Downloader
         return temp;
     }
 
-    static void process_url(String url, int recursive, MulticastSocket multicastSocket, Downloader_I server)
+    static void process_url(String url, String father_url, int recursive, MulticastSocket multicastSocket, Downloader_I server)
     throws IOException
     {
         if (url.equals("")) return;
@@ -112,7 +112,7 @@ public class Downloader
             StringTokenizer tokens = new StringTokenizer(doc.text());
 
             String word;
-            WebPage newpage = new WebPage(url, doc.title(), "no result");
+            WebPage newpage = new WebPage(url, doc.title(), "no result", father_url);
             while (tokens.hasMoreElements())
             {
                 word = removerPontuação(tokens.nextToken().strip().toLowerCase());
@@ -187,7 +187,7 @@ public class Downloader
             String newUrl;
             for (Element link : links) {
                 newUrl = link.attr("abs:href");
-                server.indexUrl2(new UrlQueueElement(newUrl, recursive-1));
+                server.indexUrl2(new UrlQueueElement(newUrl, recursive-1, url));
             }
         } catch (IOException e) {
             System.out.println("IO exception found in process_url" + e);

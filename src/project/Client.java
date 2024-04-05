@@ -57,13 +57,12 @@ public class Client
                         else {
                             try {
                                 server = (Client_I) Naming.lookup("rmi://localhost:1099/client");
-                                server.indexUrl(new UrlQueueElement(words[1], DEBUG_recursion_level));
+                                server.indexUrl(new UrlQueueElement(words[1], DEBUG_recursion_level, "-1"));
                             } catch (MalformedURLException e) {
                                 System.out.println("Url inserido inválido");
                             }
                         }
                     }
-
                     else
                     if (words[0].equals("search")) {
                         List<UrlInfo> top10 = server.searchTop10(words);
@@ -87,7 +86,13 @@ public class Client
                             }
                         } while (true);
                     }
-                    
+                    else
+                    if (words[0].equals("consult")) {
+                        List<String> list = server.getUrlsConnected2this(words[1]);
+                        for (String url : list) {
+                            System.out.println(url);
+                        }
+                    }
                     else
                     if (words[0].equals("exit")) {
                         return;

@@ -92,16 +92,16 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         } catch (InterruptedException e) {
             System.out.println("Thread was interrupted");
         }
-        return new UrlQueueElement("failed to obtain url", 0);
+        return new UrlQueueElement("failed to obtain url", 0, "-1");
     }
 
     public void addBarel(Barrel_C_I bar) {
         barrels.add(bar);
     }
 
-    public String searchWord(String msg) throws RemoteException {
+    public List<String> getUrlsConnected2this(String msg) throws RemoteException {
         // for starters lets chekc barrel 0
-        return barrels.get(0).getUrl(msg);
+        return barrels.get(0).getUrlsConnected2this(msg);
     }
 
     public List<UrlInfo> searchTop10(String[] term) throws RemoteException {

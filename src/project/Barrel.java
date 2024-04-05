@@ -17,8 +17,10 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import project.interfaces.Barrel_C_I;
 import project.interfaces.Barrel_I;
@@ -117,7 +119,8 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                     UrlInfo info = urlMap.get(webpage.url);
                     // Increment frequency
                     info.termFrequency += 1; 
-                    // Multicast can send an ack that the word already exists
+                    // Add url to pages referencing this page
+                    info.urlsPointing2this.add(webpage.fatherUrl);
                 }
             }
             catch (IOException e) {
@@ -131,14 +134,24 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
         }
     }
 
-    public String getUrl(String url) throws RemoteException {
-        // for (String msg : index) {
-        //     System.out.println(msg);
-        // }
-        // if (index.containsKey(url)) {
-        //     return url;
-        // }
-        return "";
+    // This also has ConcurrenyIssue. Try to copy function downwards to avoid that
+    public List<String> getUrlsConnected2this(String url) throws RemoteException {
+        List<String> list = new ArrayList<>();
+        Set<String> strings = new HashSet<>();
+        for (Map<String, UrlInfo> innerMap : invertedIndex.values()) {
+            for (String key : innerMap.keySet()) {
+                if (key.equals(url)) {
+                    List<String> temp = innerMap.get(key).urlsPointing2this;
+                    for (String page : temp) {
+                        if (!strings.contains(page)) {
+                            list.add(page);
+                            strings.add(page);
+                        }
+                    }
+                }
+            }
+        }
+        return list;
     }
 
     // Search for URLs containing a given term

@@ -1,6 +1,8 @@
 package project.resources;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UrlInfo implements Serializable
 {
@@ -8,12 +10,14 @@ public class UrlInfo implements Serializable
     public String title;
     public String citation;
     public Integer termFrequency;
+    public List<String> urlsPointing2this;
 
     public UrlInfo(String url, String title, String citation, Integer tFrequency) {
         this.url = url;
         this.title = title;
         this.citation = citation;
         this.termFrequency = tFrequency;
+        this.urlsPointing2this = new ArrayList<>();
     }
 
     // @Override
