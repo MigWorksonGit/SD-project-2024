@@ -48,6 +48,25 @@ public class Client
                 String[] words;
         
                 while (true) {
+                    try {
+                        try {
+                            server = (Client_I) Naming.lookup("rmi://localhost:1099/client");
+                        }
+                        catch(MalformedURLException e) {
+                            System.out.println("Server Url is incorrectly formed");
+                            System.out.println("Cant comunicate with server...");
+                            System.out.println("Closing...");
+                            System.exit(0);
+                        }
+                        catch (NotBoundException e) {
+                            System.out.println("Cant comunicate with server...");
+                            System.out.println("Closing...");
+                            System.exit(0);
+                        }
+                    } catch (RemoteException e) {
+                        System.out.println("Error comunicating to the server");
+                        System.exit(0);
+                    }
                     System.out.println("Enter a command:");
                     input = sc.nextLine();
                     words = input.trim().split(" ");
@@ -67,32 +86,41 @@ public class Client
                     }
                     else
                     if (words[0].equals("search")) {
-                        List<UrlInfo> top10 = server.searchTop10(words);
-                        System.out.println("URLs containing the term '" + words[1] + "', prioritized by frequency:");
-                        int counter = 0;
-                        loop:
-                        do {
-                            for (int i = counter; i < counter+10; i++) {
-                                if (i == top10.size()) break loop;
-                                System.out.println(top10.get(i));
-                            }
-                            System.out.println("Input \"next\" for next set of pages, \"end\" to stop");
-                            input = sc.nextLine();
-                            if (input.equals("end")) break;
-                            else if (input.equals("next")) {
-                                counter += 10;
-                            }
-                            else {
-                                System.out.println("Wrong input, backing out...");
-                                break;
-                            }
-                        } while (true);
+                        try {
+                            List<UrlInfo> top10 = server.searchTop10(words);
+                            System.out.println("URLs containing the term '" + words[1] + "', prioritized by frequency:");
+                            int counter = 0;
+                            loop:
+                            do {
+                                for (int i = counter; i < counter+10; i++) {
+                                    if (i == top10.size()) break loop;
+                                    System.out.println(top10.get(i));
+                                }
+                                System.out.println("Input \"next\" for next set of pages, \"end\" to stop");
+                                input = sc.nextLine();
+                                if (input.equals("end")) break;
+                                else if (input.equals("next")) {
+                                    counter += 10;
+                                }
+                                else {
+                                    System.out.println("Wrong input, backing out...");
+                                    break;
+                                }
+                            } while (true);
+                        } catch (RemoteException e) {
+                            System.out.println("Cant connect to barrels");
+                        }
                     }
                     else
                     if (words[0].equals("consult")) {
-                        List<String> list = server.getUrlsConnected2this(words[1]);
-                        for (String url : list) {
-                            System.out.println(url);
+                        // Should distinguish between server and barrel >w<
+                        try {
+                            List<String> list = server.getUrlsConnected2this(words[1]);
+                            for (String url : list) {
+                                System.out.println(url);
+                            }
+                        } catch (RemoteException e) {
+                            System.out.println("Cant connect to barrels");
                         }
                     }
                     else

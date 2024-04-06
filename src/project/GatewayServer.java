@@ -32,6 +32,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     int num_of_barrels = 0;
     private ArrayList<Integer> active_barrel_idx = new ArrayList<>();
     private ArrayList<Barrel_C_I> barrels = new ArrayList<>();
+    int rr_index = 0;
     // Thread safe list.
     // Object[0] is the word, Object[1] is the number of times that word was searched
     Semaphore list_mutex = new Semaphore(1);
@@ -135,12 +136,38 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
 
     public List<String> getUrlsConnected2this(String msg) throws RemoteException {
         // for starters lets chekc barrel 0
-        return barrels.get(0).getUrlsConnected2this(msg);
+        // return barrels.get(0).getUrlsConnected2this(msg);
+        if (active_barrel_idx.isEmpty()) {
+            throw new RemoteException();
+        }
+        int retries = 3;
+        while (true) {
+            try {
+                if (active_barrel_idx.isEmpty()) {
+                    throw new RemoteException();
+                }
+                if (active_barrel_idx.contains(rr_index)) {
+                    return barrels.get(rr_index++).getUrlsConnected2this(msg);
+                }
+                if (rr_index >= num_of_barrels) {
+                    rr_index = 0;
+                    continue;
+                }
+                rr_index++;
+            } catch (RemoteException e) {
+                retries--;
+                if (retries == 0) throw new RemoteException();
+            }
+        }
     }
 
     // If remote exception is received, it means the barrel on the current index
     // has been deactivated
     public List<UrlInfo> searchTop10(String[] term) throws RemoteException {
+        // also do stuff here !!!! check if empty and such
+        if (active_barrel_idx.isEmpty()) {
+            throw new RemoteException();
+        }
         try {
             list_mutex.acquire();
             for (int i = 1; i < term.length; i++) {
@@ -161,10 +188,28 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
             System.out.println("SearchTop10: list mutex interrupted");
         }
         try {
-            return barrels.get(0).searchTop10(term);
+            int retries = 3;
+            while (true) {
+                try {
+                    if (active_barrel_idx.isEmpty()) {
+                        throw new RemoteException();
+                    }
+                    if (active_barrel_idx.contains(rr_index)) {
+                        return barrels.get(rr_index++).searchTop10(term);
+                    }
+                    if (rr_index >= num_of_barrels) {
+                        rr_index = 0;
+                        continue;
+                    }
+                    rr_index++;
+                } catch (RemoteException e) {
+                    retries--;
+                    if (retries == 0) throw new RemoteException();
+                }
+            }
         } catch (RemoteException e) {
             System.out.println("Hahaha remote exception " + e);
-            return null;
+            throw new RemoteException();
         }
     }
 
