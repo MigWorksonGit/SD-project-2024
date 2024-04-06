@@ -4,6 +4,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
@@ -30,6 +31,10 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     // Server must know its Barrels
     int num_of_barrels = 0;
     private ArrayList<Barrel_C_I> barrels = new ArrayList<>();
+    // Thread safe list.
+    // Object[0] is the word, Object[1] is the number of times that word was searched
+    Semaphore list_mutex = new Semaphore(1);
+    private ArrayList<Object[]> threadSafeList = new ArrayList<>();
 
     public GatewayServer() throws RemoteException {
         super();
@@ -131,6 +136,25 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     // has been deactivated
     public List<UrlInfo> searchTop10(String[] term) throws RemoteException {
         try {
+            list_mutex.acquire();
+            for (int i = 1; i < term.length; i++) {
+                boolean hasElement = false;
+                for (Object[] tuple : threadSafeList) {
+                    if (term[i].toLowerCase().equals((String) tuple[0])) {
+                        tuple[1] = (int) tuple[1] + 1;
+                        hasElement = true;
+                        break;
+                    }
+                }
+                if (!hasElement) {
+                    threadSafeList.add(new Object[]{term[i].toLowerCase(), 1});
+                }
+            }
+            list_mutex.release();
+        } catch (InterruptedException e) {
+            System.out.println("SearchTop10: list mutex interrupted");
+        }
+        try {
             return barrels.get(0).searchTop10(term);
         } catch (RemoteException e) {
             System.out.println("Hahaha remote exception " + e);
@@ -138,11 +162,49 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         }
     }
 
+    // Get alive barrels name
+    public String getAliveBarrelName() {
+        StringBuilder info = new StringBuilder();
+
+        for (int i = 0; i < num_of_barrels; i++) {
+            try {
+                barrels.get(i).isAlive();
+                info.append(barrels.get(i).getName()).append(" - ");
+                info.append(barrels.get(i).getAvgExeTime()).append("\n");
+            } catch (RemoteException e) {
+                continue;
+            }
+        }
+        return info.toString();
+    }
+
     // If index 0 is out of bounds: No existing barrels
     // If RemoteException is received
     public String getAdminInfo() throws RemoteException {
         StringBuilder info = new StringBuilder();
+        
+        info.append("--- Most searched words ---\n");
+        try {
+            list_mutex.acquire();
+            threadSafeList.sort(new Comparator<Object[]>() {
+                @Override
+                public int compare(Object[] o1, Object[] o2) {
+                    Integer int1 = (Integer) o1[1];
+                    Integer int2 = (Integer) o2[1];
+                    return int2.compareTo(int1);
+                }
+            });
+            for (int i = 0; i < Math.min(10, threadSafeList.size()); i++) {
+                // System.out.println(threadSafeList.get(i)[1]);
+                info.append(threadSafeList.get(i)[0].toString()).append("\n");
+            }
+            list_mutex.release();
+        } catch (InterruptedException e) {
+            System.out.println("getAdminInfo: list mutex interrupted");
+        }
+        info.append("--- List of active barrels + Avg Exe time ---\n");
+        info.append(getAliveBarrelName());
 
-        return info.toString().toLowerCase();
+        return info.toString();
     }
 }

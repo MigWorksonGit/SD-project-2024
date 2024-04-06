@@ -33,4 +33,8 @@ public class ClientServer extends UnicastRemoteObject implements Client_I
     public List<UrlInfo> searchTop10(String[] term) throws RemoteException {
         return server.searchTop10(term);
     }
+
+    public String getAdminInfo() throws RemoteException {
+        return server.getAdminInfo();
+    }
 }

@@ -45,6 +45,14 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     public void setName(String newName) throws RemoteException {
         name = newName;
     }
+    public String getName() throws RemoteException {
+        return name;
+    }
+    // Average time
+    long averageExecutionTime = 0;
+    public long getAvgExeTime() throws RemoteException {
+        return averageExecutionTime;
+    }
 
     //  mais relevante se tiver mais ligações **de** outras páginas
     // invertedIndex:
@@ -204,6 +212,7 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     }
 
     public List<String> getUrlsConnected2this(String url) throws RemoteException {
+        long startTime = System.nanoTime(); // start timer
         List<String> list = new ArrayList<>();
         Set<String> strings = new HashSet<>();
         for (Map<String, UrlInfo> innerMap : invertedIndex.values()) {
@@ -219,6 +228,9 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                 }
             }
         }
+        long endTime = System.nanoTime(); // end timer
+        long currentTime = (endTime - startTime) / 100_000_000; // convert to decisec
+        averageExecutionTime = (long)((averageExecutionTime + currentTime) * 0.5);
         return list;
     }
 
@@ -227,6 +239,7 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
         // Currently this only sorts by frequency
         // Add smth to make it also sort if an url has more of the intented words in it
         // More terms = higher priority
+        long startTime = System.nanoTime(); // start timer
         List<UrlInfo> list = new ArrayList<>();
         for (int i = 1; i < term.length; i++) {
             Map<String, UrlInfo> urlFrequency = invertedIndex.getOrDefault(term[i], Collections.emptyMap());
@@ -234,6 +247,10 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
             list.addAll(urls);
         }
         list.sort((url1, url2) -> url2.termFrequency - url1.termFrequency);
+        // timer stuff
+        long endTime = System.nanoTime(); // end timer
+        long currentTime = (endTime - startTime) / 100_000_000; // convert to decisec
+        averageExecutionTime = (long)((averageExecutionTime + currentTime) * 0.5);
         return list;
     }
 

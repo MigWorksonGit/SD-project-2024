@@ -186,7 +186,9 @@ public class Downloader
 
                 multicastSocket.setSoTimeout(1000);
                 multicastSocket.receive(packetReceiver);
-                System.out.println("Received Acknowledgement of word: " + word);
+                String received = new String(packetReceiver.getData(), 0, packetReceiver.getLength());
+                System.out.println("Processed word: " + word);
+                System.out.println("Received Acknowledgement of word: " + received);
                 visited_words.add(word);
             }
             // then obtain the links and do magic

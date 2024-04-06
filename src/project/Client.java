@@ -41,6 +41,8 @@ public class Client
             }
 
             // Obtain Input
+            // Error found in scanner java.rmi.UnmarshalException: Error unmarshaling return header; nested exception is: 
+            // java.net.SocketException: Connection reset -> when making a query to the server but server goes down mid query
             try (Scanner sc = new Scanner(System.in)) {
                 String input;
                 String[] words;
@@ -57,7 +59,7 @@ public class Client
                         else {
                             try {
                                 server = (Client_I) Naming.lookup("rmi://localhost:1099/client");
-                                server.indexUrl(new UrlQueueElement(words[1], DEBUG_recursion_level, "-1"));
+                                server.indexUrl(new UrlQueueElement(words[1], DEBUG_recursion_level, ""));
                             } catch (MalformedURLException e) {
                                 System.out.println("Url inserido inválido");
                             }
@@ -96,7 +98,8 @@ public class Client
                     else
                     if (words[0].equals("admin")) {
                         // Show admin page
-                        
+                        String adminInfo = server.getAdminInfo();
+                        System.out.println(adminInfo);
                     }
                     else
                     if (words[0].equals("exit")) {
