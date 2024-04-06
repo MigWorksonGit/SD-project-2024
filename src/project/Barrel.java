@@ -41,6 +41,7 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     static int MULTICAST_PORT = 4446;
 
     // Barrel variables
+    static Barrel_I server = null;
     static String name;
     public void setName(String newName) throws RemoteException {
         name = newName;
@@ -64,8 +65,19 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     }
 
     public static void main(String[] args) {
+        // Detect shutdown
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            // System.out.println("HAHAHA");
+            try {
+                int index = Character.getNumericValue(name.charAt(name.length() - 1));
+                server.removeBarrel(index);
+            } catch (RemoteException e) {
+                ;
+            }
+        }));
+        // Create servers
         try {
-            Barrel_I server = null;
+            server = null;
             // Must make this also a unicast stuff RMI
             // Try and give correct error messages and such
             try {
@@ -193,7 +205,7 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                     bWriter.newLine();
 
                     // Send ACK that packet was received suceffuly
-                    String ack = word;
+                    String ack = "ACK";
                     byte[] bufferAck = ack.getBytes();
                     DatagramPacket pack2send = new DatagramPacket(bufferAck, bufferAck.length, packet.getAddress(), packet.getPort());
                     multicastSocket.send(pack2send);

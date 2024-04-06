@@ -59,7 +59,7 @@ public class Client
                         else {
                             try {
                                 server = (Client_I) Naming.lookup("rmi://localhost:1099/client");
-                                server.indexUrl(new UrlQueueElement(words[1], DEBUG_recursion_level, ""));
+                                server.indexUrl(new UrlQueueElement(words[1], DEBUG_recursion_level, "-1"));
                             } catch (MalformedURLException e) {
                                 System.out.println("Url inserido inválido");
                             }

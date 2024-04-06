@@ -30,6 +30,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
 
     // Server must know its Barrels
     int num_of_barrels = 0;
+    private ArrayList<Integer> active_barrel_idx = new ArrayList<>();
     private ArrayList<Barrel_C_I> barrels = new ArrayList<>();
     // Thread safe list.
     // Object[0] is the word, Object[1] is the number of times that word was searched
@@ -100,30 +101,35 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         return new UrlQueueElement("failed to obtain url", 0, "-1");
     }
 
+    public void removeBarrel(int index) throws RemoteException {
+        for (int i = 0; i < active_barrel_idx.size(); i++) {
+            if (active_barrel_idx.get(i) == index) {
+                active_barrel_idx.remove(i);
+            }
+        }
+    }
+
     public void addBarel(Barrel_C_I bar) throws RemoteException {
-        // This is kinda slow due to catching exception but works as intended
         if (num_of_barrels == 0) {
             barrels.add(bar);
+            active_barrel_idx.add(0);
             barrels.get(0).setName("barrel_0");
             num_of_barrels++;
             return;
         }
         for (int i = 0; i < num_of_barrels; i++) {
-            try {
-                barrels.get(i).isAlive();
-            } catch (IndexOutOfBoundsException e) {
-                System.out.println("This is out of bounds " + i);
-                return;
-            } catch (RemoteException e) {
+            if (!active_barrel_idx.contains(i)) {
                 System.out.println("Barrel " + i + " no longer exists");
                 barrels.set(i, bar);
                 barrels.get(i).setName("barrel_" + i);
+                active_barrel_idx.add(i);
                 return;
             }
         }
         // if they are all alive
         barrels.add(bar);
         barrels.get(num_of_barrels).setName("barrel_" + num_of_barrels);
+        active_barrel_idx.add(num_of_barrels);
         num_of_barrels++;
     }
 
@@ -166,20 +172,17 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     public String getAliveBarrelName() {
         StringBuilder info = new StringBuilder();
 
-        for (int i = 0; i < num_of_barrels; i++) {
+        for (int index : active_barrel_idx) {
             try {
-                barrels.get(i).isAlive();
-                info.append(barrels.get(i).getName()).append(" - ");
-                info.append(barrels.get(i).getAvgExeTime()).append("\n");
+                info.append(barrels.get(index).getName()).append(" - ");
+                info.append(barrels.get(index).getAvgExeTime()).append("\n");
             } catch (RemoteException e) {
                 continue;
             }
         }
         return info.toString();
     }
-
-    // If index 0 is out of bounds: No existing barrels
-    // If RemoteException is received
+    
     public String getAdminInfo() throws RemoteException {
         StringBuilder info = new StringBuilder();
         

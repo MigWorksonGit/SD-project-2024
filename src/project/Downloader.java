@@ -95,7 +95,7 @@ public class Downloader
 
     static String removerPontuação(String text) {
         if (text == null) return "";
-        String temp = text.replaceAll("[.,;:\\\"'?!«»()\\[\\]{}-]", "");
+        String temp = text.replaceAll("[.,;:\\\"'?!|«»()\\[\\]{}-]", "");
         return temp;
     }
 
@@ -186,9 +186,10 @@ public class Downloader
 
                 multicastSocket.setSoTimeout(1000);
                 multicastSocket.receive(packetReceiver);
-                String received = new String(packetReceiver.getData(), 0, packetReceiver.getLength());
+                // String received = new String(packetReceiver.getData(), 0, packetReceiver.getLength());
                 System.out.println("Processed word: " + word);
-                System.out.println("Received Acknowledgement of word: " + received);
+                // System.out.println("Received Acknowledgement of word: " + received);
+
                 visited_words.add(word);
             }
             // then obtain the links and do magic
