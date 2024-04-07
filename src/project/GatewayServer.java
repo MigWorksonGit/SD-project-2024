@@ -90,6 +90,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     }
 
     public UrlQueueElement removeUrl() {
+        // also block if there are no barrels available
         try {
             while (true) {
                 mutex.acquire();

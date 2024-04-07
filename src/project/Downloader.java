@@ -7,6 +7,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.MulticastSocket;
+import java.net.SocketTimeoutException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -65,6 +66,10 @@ public class Downloader
                     element = server.removeUrl2();
                     try {
                         process_url(element.url, element.father_url, element.recursion_level, multicastSocket, server);
+                    } catch (SocketTimeoutException e) {
+                        // Add element to queue in this case
+                        // Block if there are no downloaders?
+                        server.indexUrl2(element);
                     } catch (IOException e) {
                         continue;
                     }
@@ -100,7 +105,7 @@ public class Downloader
     }
 
     static void process_url(String url, String father_url, int recursive, MulticastSocket multicastSocket, Downloader_I server)
-    throws IOException
+    throws IOException, SocketTimeoutException
     {
         if (url.equals("")) return;
         if (!url.startsWith("https://")) return;
@@ -184,7 +189,7 @@ public class Downloader
                 byte[] buf = new byte[124];
                 DatagramPacket packetReceiver = new DatagramPacket(buf, buf.length, group, MULTICAST_PORT);
 
-                multicastSocket.setSoTimeout(1000);
+                multicastSocket.setSoTimeout(5000);
                 multicastSocket.receive(packetReceiver);
                 // String received = new String(packetReceiver.getData(), 0, packetReceiver.getLength());
                 System.out.println("Processed word: " + word);
@@ -199,8 +204,13 @@ public class Downloader
                 newUrl = link.attr("abs:href");
                 server.indexUrl2(new UrlQueueElement(newUrl, recursive-1, url));
             }
-        } catch (IOException e) {
-            System.out.println("IO exception found in process_url" + e);
+        } 
+        catch (SocketTimeoutException e) {
+            System.out.println("Socket timeout found in process_url " + e);
+            throw new SocketTimeoutException();
+        }
+        catch (IOException e) {
+            System.out.println("IO exception found in process_url " + e);
             throw new IOException();
         }
     }

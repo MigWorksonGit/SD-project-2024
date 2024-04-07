@@ -20,22 +20,22 @@ public class UrlInfo implements Serializable
         this.urlsPointing2this = new ArrayList<>();
     }
 
-    // @Override
-    // public String toString()
-    // {
-    //     return String.format(
-    //         "%s\n%s\n%s",
-    //         title, url, citation
-    //     );
-    // }
-
-    // Debug print
     @Override
     public String toString()
     {
         return String.format(
-            "-----\n%s\n%s\n%s\n%d\n-----",
-            title, url, citation, termFrequency
+            "%s\n%s\n%s",
+            title, url, citation
         );
     }
+
+    // Debug print
+    // @Override
+    // public String toString()
+    // {
+    //     return String.format(
+    //         "-----\n%s\n%s\n%s\n%d\n-----",
+    //         title, url, citation, termFrequency
+    //     );
+    // }
 }

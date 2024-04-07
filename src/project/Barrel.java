@@ -69,158 +69,167 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             // System.out.println("HAHAHA");
             try {
-                int index = Character.getNumericValue(name.charAt(name.length() - 1));
-                server.removeBarrel(index);
+                if (name != null) {
+                    int index = Character.getNumericValue(name.charAt(name.length() - 1));
+                    server.removeBarrel(index);
+                }
             } catch (RemoteException e) {
                 ;
             }
         }));
-        // Create servers
-        try {
-            server = null;
-            // Must make this also a unicast stuff RMI
-            // Try and give correct error messages and such
+        int reconnect = 0;
+        while (reconnect < 3) {
+            // Connect to server
             try {
+                server = null;
+                // Must make this also a unicast stuff RMI
+                // Try and give correct error messages and such
                 try {
-                    server = (Barrel_I) Naming.lookup("rmi://localhost:1097/barrel");
-                    // SUBSCRIBE BARREL TO SERVER!!!
-                    Barrel myself  = new Barrel();
-                    server.subscribeBarrel((Barrel_C_I) myself);
-                }
-                catch(MalformedURLException e) {
-                    System.out.println("Server Url is incorrectly formed");
-                    System.out.println("Cant comunicate with server...");
-                    System.out.println("Closing...");
-                    System.exit(0);
-                }
-                catch (NotBoundException e) {
-                    System.out.println("Cant comunicate with server...");
-                    System.out.println("Closing...");
-                    System.exit(0);
-                }
-                System.out.println("Barrel " + name + " is ready");
-            } catch (RemoteException e) {
-                System.out.println("Error comunicating to the server");
-                System.exit(0);
-            }
-
-            // create or check if file exists
-            String folderPath = "src/project/barrel_files";
-            String filename = name + ".txt";
-            File folder = new File(folderPath);
-            if (!folder.exists())
-                folder.mkdirs();
-            File file = new File(folder, filename);
-            if (!file.exists()) {
-                try {
-                    file.createNewFile();
-                } catch (IOException e) {
-                    System.out.println("Could not create file. Exiting out...");
-                    System.exit(0);
-                }
-            }
-            else {
-                // unusual line terminators?
-                try {
-                    FileReader fReader = new FileReader(file);
-                    BufferedReader bReader = new BufferedReader(fReader);
-                    String line;
-                    while((line = bReader.readLine()) != null) {
-                        String[] parts = line.split("\\|");
-                        if (parts.length == 6) {
-                            String word1 = parts[0];
-                            String url1 = parts[1];
-                            String title1 = parts[2];
-                            String citation1 = parts[3];
-                            int frequency1 = Integer.parseInt(parts[4]);
-                            String father1 = parts[5];
-                            invertedIndex.putIfAbsent(word1, new HashMap<>());
-                            Map<String, UrlInfo> urlMap = invertedIndex.get(word1);
-                            urlMap.putIfAbsent(
-                                url1,
-                                new UrlInfo(url1, title1, citation1, frequency1)
-                            );
-                            UrlInfo info = urlMap.get(url1);
-                            // Increment frequency
-                            info.termFrequency += 1; 
-                            // Add url to pages referencing this page
-                            info.urlsPointing2this.add(father1);
-                        }
-                    }
-                    bReader.close();
-                } catch (IOException e) {
-                    System.out.println("Could not read from file. Exiting out...");
-                    System.exit(0);
-                }
-            }
-
-            FileWriter fWriter = new FileWriter(file, true);
-            BufferedWriter bWriter = new BufferedWriter(fWriter);
-
-            MulticastSocket multicastSocket = null;
-            try {
-                multicastSocket = new MulticastSocket(MULTICAST_PORT);
-                InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);
-                multicastSocket.joinGroup(new InetSocketAddress(group, 0), NetworkInterface.getByIndex(0));
-
-                while (true) 
-                {
-                    // Receive packet
-                    byte[] buffer = new byte[1024];
-                    DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                    multicastSocket.receive(packet);
-
-                    //UrlQueue Element
-                    ByteArrayInputStream bais = new ByteArrayInputStream(packet.getData());
-                    ObjectInputStream ois = new ObjectInputStream(bais);
-                    Message msg2receive = null;
                     try {
-                        msg2receive = (Message) ois.readObject();
-                    } catch (EOFException e) {
-                        ois.close();
-                        continue;
+                        server = (Barrel_I) Naming.lookup("rmi://localhost:1097/barrel");
+                        // SUBSCRIBE BARREL TO SERVER!!!
+                        Barrel myself  = new Barrel();
+                        server.subscribeBarrel((Barrel_C_I) myself);
                     }
-                    ois.close();
+                    catch(MalformedURLException e) {
+                        System.out.println("Server Url is incorrectly formed");
+                        System.out.println("Cant comunicate with server...");
+                        System.out.println("Closing...");
+                        System.exit(0);
+                    }
+                    catch (NotBoundException e) {
+                        System.out.println("Cant comunicate with server...");
+                        System.out.println("Closing...");
+                        System.exit(0);
+                    }
+                    System.out.println("Barrel " + name + " is ready");
+                } catch (RemoteException e) {
+                    System.out.println("Error comunicating to the server");
+                    System.exit(0);
+                }
 
-                    System.out.println(msg2receive);
-                    String word = msg2receive.word;
-                    WebPage webpage = msg2receive.page;
+                // create or check if file exists
+                String folderPath = "src/project/barrel_files";
+                String filename = name + ".txt";
+                File folder = new File(folderPath);
+                if (!folder.exists())
+                    folder.mkdirs();
+                File file = new File(folder, filename);
+                if (!file.exists()) {
+                    try {
+                        file.createNewFile();
+                    } catch (IOException e) {
+                        System.out.println("Could not create file. Exiting out...");
+                        System.exit(0);
+                    }
+                }
+                else {
+                    // unusual line terminators?
+                    try {
+                        FileReader fReader = new FileReader(file);
+                        BufferedReader bReader = new BufferedReader(fReader);
+                        String line;
+                        while((line = bReader.readLine()) != null) {
+                            String[] parts = line.split("\\|");
+                            if (parts.length == 6) {
+                                String word1 = parts[0];
+                                String url1 = parts[1];
+                                String title1 = parts[2];
+                                String citation1 = parts[3];
+                                int frequency1 = Integer.parseInt(parts[4]);
+                                String father1 = parts[5];
+                                invertedIndex.putIfAbsent(word1, new HashMap<>());
+                                Map<String, UrlInfo> urlMap = invertedIndex.get(word1);
+                                urlMap.putIfAbsent(
+                                    url1,
+                                    new UrlInfo(url1, title1, citation1, frequency1)
+                                );
+                                UrlInfo info = urlMap.get(url1);
+                                // Increment frequency
+                                info.termFrequency += 1; 
+                                // Add url to pages referencing this page
+                                info.urlsPointing2this.add(father1);
+                            }
+                        }
+                        bReader.close();
+                    } catch (IOException e) {
+                        System.out.println("Could not read from file. Exiting out...");
+                        System.exit(0);
+                    }
+                }
 
-                    // add if word does not exist
-                    invertedIndex.putIfAbsent(word, new HashMap<>());
-                    // get the Map of the word
-                    Map<String, UrlInfo> urlMap = invertedIndex.get(word);
-                    urlMap.putIfAbsent(
-                        webpage.url,
-                        new UrlInfo(webpage.url, webpage.title, webpage.citation, 0)
-                    );
-                    UrlInfo info = urlMap.get(webpage.url);
-                    // Increment frequency
-                    info.termFrequency += 1; 
-                    // Add url to pages referencing this page
-                    info.urlsPointing2this.add(webpage.fatherUrl);
+                FileWriter fWriter = new FileWriter(file, true);
+                BufferedWriter bWriter = new BufferedWriter(fWriter);
 
-                    // Writing to file
-                    bWriter.write(word + "|" + webpage.url + "|" + webpage.title + "|" + webpage.citation + "|" + info.termFrequency + "|" + webpage.fatherUrl);
-                    bWriter.newLine();
+                MulticastSocket multicastSocket = null;
+                try {
+                    multicastSocket = new MulticastSocket(MULTICAST_PORT);
+                    InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);
+                    multicastSocket.joinGroup(new InetSocketAddress(group, 0), NetworkInterface.getByIndex(0));
 
-                    // Send ACK that packet was received suceffuly
-                    String ack = "ACK";
-                    byte[] bufferAck = ack.getBytes();
-                    DatagramPacket pack2send = new DatagramPacket(bufferAck, bufferAck.length, packet.getAddress(), packet.getPort());
-                    multicastSocket.send(pack2send);
+                    while (true) 
+                    {
+                        // Receive packet
+                        byte[] buffer = new byte[1024];
+                        DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+                        multicastSocket.receive(packet);
+
+                        //UrlQueue Element
+                        ByteArrayInputStream bais = new ByteArrayInputStream(packet.getData());
+                        ObjectInputStream ois = new ObjectInputStream(bais);
+                        Message msg2receive = null;
+                        try {
+                            msg2receive = (Message) ois.readObject();
+                        } catch (EOFException e) {
+                            ois.close();
+                            continue;
+                        }
+                        ois.close();
+
+                        System.out.println(msg2receive);
+                        String word = msg2receive.word;
+                        WebPage webpage = msg2receive.page;
+
+                        // add if word does not exist
+                        invertedIndex.putIfAbsent(word, new HashMap<>());
+                        // get the Map of the word
+                        Map<String, UrlInfo> urlMap = invertedIndex.get(word);
+                        urlMap.putIfAbsent(
+                            webpage.url,
+                            new UrlInfo(webpage.url, webpage.title, webpage.citation, 0)
+                        );
+                        UrlInfo info = urlMap.get(webpage.url);
+                        // Increment frequency
+                        info.termFrequency += 1; 
+                        // Add url to pages referencing this page
+                        info.urlsPointing2this.add(webpage.fatherUrl);
+
+                        // Writing to file
+                        bWriter.write(word + "|" + webpage.url + "|" + webpage.title + "|" + webpage.citation + "|" + info.termFrequency + "|" + webpage.fatherUrl);
+                        bWriter.newLine();
+
+                        // Send ACK that packet was received suceffuly
+                        String ack = "ACK";
+                        byte[] bufferAck = ack.getBytes();
+                        DatagramPacket pack2send = new DatagramPacket(bufferAck, bufferAck.length, packet.getAddress(), packet.getPort());
+                        multicastSocket.send(pack2send);
+                    }
+                }
+                catch (IOException e) {
+                    System.out.println("Error in reading file " + e);
+                } finally {
+                    multicastSocket.close();
+                    bWriter.close();
+                    reconnect++;
                 }
             }
-            catch (IOException e) {
-                throw new RuntimeException(e);
-            } finally {
-                multicastSocket.close();
-                bWriter.close();
+            catch (Exception e) {
+                System.out.println("Exception in main: " + e);
+                reconnect++;
             }
         }
-        catch (Exception e) {
-            System.out.println("Exception in main: " + e);
-        }
+        System.out.println("Recconect has failed with " + reconnect + " tries");
+        System.exit(0);
     }
 
     public List<String> getUrlsConnected2this(String url) throws RemoteException {

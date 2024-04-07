@@ -40,9 +40,6 @@ public class Client
                 System.exit(0);
             }
 
-            // Obtain Input
-            // Error found in scanner java.rmi.UnmarshalException: Error unmarshaling return header; nested exception is: 
-            // java.net.SocketException: Connection reset -> when making a query to the server but server goes down mid query
             try (Scanner sc = new Scanner(System.in)) {
                 String input;
                 String[] words;
@@ -70,17 +67,20 @@ public class Client
                     System.out.println("Enter a command:");
                     input = sc.nextLine();
                     words = input.trim().split(" ");
-        
-                    if (words[0].equals("index")) {
-                        // if no url is given it just dies.
+
+                    if (words.length < 2) {
+                        System.out.println("Incorrect input");
+                    }
+                    else
+                    if (words[0].equals("index"))
+                    {
                         if (!words[1].startsWith("https"))
                             System.out.println("Url must start with https");
                         else {
                             try {
-                                server = (Client_I) Naming.lookup("rmi://localhost:1099/client");
                                 server.indexUrl(new UrlQueueElement(words[1], DEBUG_recursion_level, "-1"));
-                            } catch (MalformedURLException e) {
-                                System.out.println("Url inserido inválido");
+                            } catch (Exception e) {
+                                System.out.println("Cant connect to server");
                             }
                         }
                     }
@@ -93,7 +93,11 @@ public class Client
                             loop:
                             do {
                                 for (int i = counter; i < counter+10; i++) {
-                                    if (i == top10.size()) break loop;
+                                    if (i == top10.size()) {
+                                        System.out.println("-----");
+                                        break loop;
+                                    }
+                                    System.out.println("-----");
                                     System.out.println(top10.get(i));
                                 }
                                 System.out.println("Input \"next\" for next set of pages, \"end\" to stop");
@@ -113,24 +117,23 @@ public class Client
                     }
                     else
                     if (words[0].equals("consult")) {
-                        // Should distinguish between server and barrel >w<
                         try {
                             List<String> list = server.getUrlsConnected2this(words[1]);
                             for (String url : list) {
-                                System.out.println(url);
+                                if (!url.equals("-1")) System.out.println(url);
                             }
                         } catch (RemoteException e) {
                             System.out.println("Cant connect to barrels");
                         }
                     }
                     else
-                    if (words[0].equals("admin")) {
+                    if (words[0].equals("admin") && words[1].equals("info")) {
                         // Show admin page
                         String adminInfo = server.getAdminInfo();
                         System.out.println(adminInfo);
                     }
                     else
-                    if (words[0].equals("exit")) {
+                    if (words[0].equals("exit") && words[1].equals("client")) {
                         return;
                     }
                 }
