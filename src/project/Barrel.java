@@ -19,6 +19,8 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.time.Duration;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,8 +52,8 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
         return name;
     }
     // Average time
-    long averageExecutionTime = 0;
-    public long getAvgExeTime() throws RemoteException {
+    double averageExecutionTime = 0;
+    public double getAvgExeTime() throws RemoteException {
         return averageExecutionTime;
     }
 
@@ -233,7 +235,7 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     }
 
     public List<String> getUrlsConnected2this(String url) throws RemoteException {
-        long startTime = System.nanoTime(); // start timer
+        LocalTime startTime = LocalTime.now(); // start timer
         List<String> list = new ArrayList<>();
         Set<String> strings = new HashSet<>();
         for (Map<String, UrlInfo> innerMap : invertedIndex.values()) {
@@ -249,9 +251,10 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                 }
             }
         }
-        long endTime = System.nanoTime(); // end timer
-        long currentTime = (endTime - startTime) / 100_000_000; // convert to decisec
-        averageExecutionTime = (long)((averageExecutionTime + currentTime) * 0.5);
+        LocalTime endTime = LocalTime.now(); // end timer
+        Duration duration = Duration.between(startTime, endTime);
+        long deciseconds = duration.toMillis() / 100;
+        averageExecutionTime = (averageExecutionTime + deciseconds) / 2;
         return list;
     }
 
@@ -260,7 +263,7 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
         // Currently this only sorts by frequency
         // Add smth to make it also sort if an url has more of the intented words in it
         // More terms = higher priority
-        long startTime = System.nanoTime(); // start timer
+        LocalTime startTime = LocalTime.now(); // start timer
         List<UrlInfo> list = new ArrayList<>();
         for (int i = 1; i < term.length; i++) {
             Map<String, UrlInfo> urlFrequency = invertedIndex.getOrDefault(term[i], Collections.emptyMap());
@@ -269,9 +272,11 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
         }
         list.sort((url1, url2) -> url2.termFrequency - url1.termFrequency);
         // timer stuff
-        long endTime = System.nanoTime(); // end timer
-        long currentTime = (endTime - startTime) / 100_000_000; // convert to decisec
-        averageExecutionTime = (long)((averageExecutionTime + currentTime) * 0.5);
+        LocalTime endTime = LocalTime.now(); // end timer
+        Duration duration = Duration.between(startTime, endTime);
+        double deciseconds = duration.toMillis() / 100;
+        averageExecutionTime = (averageExecutionTime + deciseconds) / 2;
+        //System.out.println(String.format("%.10f", averageExecutionTime));
         return list;
     }
 

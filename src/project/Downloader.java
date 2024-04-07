@@ -86,13 +86,6 @@ public class Downloader
                 multicastSocket.close();
             }
         }
-        // Something causes this to happen and idk what it is
-        // Its because of the url given
-        // One error is:
-        // Exception in main: java.lang.IllegalArgumentException: The supplied URL, 'steam://store/2059170', is malformed. 
-        // Make sure it is an absolute URL, and starts with 'http://' or 'https://'. See https://jsoup.org/cookbook/extracting-data/working-with-urls
-        // So gotta fix that
-        // The worst error is NULL exception
         catch (Exception e) {
             System.out.println("Exception in main: " + e);
         }
