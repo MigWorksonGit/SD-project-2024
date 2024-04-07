@@ -88,7 +88,12 @@ public class Client
                     if (words[0].equals("search")) {
                         try {
                             List<UrlInfo> top10 = server.searchTop10(words);
-                            System.out.println("URLs containing the term '" + words[1] + "', prioritized by frequency:");
+                            // System.out.println("URLs containing the term '" + words[1] + "', prioritized by frequency:");
+                            System.out.print("Urls containing the word(s): ");
+                            for (String wString : words) {
+                                System.out.print(wString + " ");
+                            }
+                            System.out.println("");
                             int counter = 0;
                             loop:
                             do {

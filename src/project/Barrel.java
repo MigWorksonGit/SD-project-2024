@@ -205,6 +205,9 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                         info.termFrequency += 1; 
                         // Add url to pages referencing this page
                         info.urlsPointing2this.add(webpage.fatherUrl);
+                        // put back into map
+                        urlMap.put(webpage.url, info);
+                        invertedIndex.put(word, urlMap);
 
                         // Writing to file
                         bWriter.write(word + "|" + webpage.url + "|" + webpage.title + "|" + webpage.citation + "|" + info.termFrequency + "|" + webpage.fatherUrl);
@@ -260,9 +263,6 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
 
     // Search for URLs containing a given term
     public List<UrlInfo> searchTop10(String[] term) throws RemoteException {
-        // Currently this only sorts by frequency
-        // Add smth to make it also sort if an url has more of the intented words in it
-        // More terms = higher priority
         LocalTime startTime = LocalTime.now(); // start timer
         List<UrlInfo> list = new ArrayList<>();
         for (int i = 1; i < term.length; i++) {
@@ -270,14 +270,40 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
             List<UrlInfo> urls = new ArrayList<>(urlFrequency.values());
             list.addAll(urls);
         }
-        list.sort((url1, url2) -> url2.termFrequency - url1.termFrequency);
+        // If there is only one word to search for
+        if (term.length == 2) {
+            list.sort((url1, url2) -> url2.termFrequency - url1.termFrequency);
+            // timer stuff
+            LocalTime endTime = LocalTime.now(); // end timer
+            Duration duration = Duration.between(startTime, endTime);
+            double deciseconds = duration.toMillis() / 100;
+            averageExecutionTime = (averageExecutionTime + deciseconds) / 2;
+            return list;
+        }
+        // else, if more than 1 word
+        // Combine the values of duplicate urls
+        Map<String, UrlInfo> dupMap = new HashMap<>();
+        for (UrlInfo tempInfo : list) {
+            String urlString = tempInfo.url;
+            if (dupMap.containsKey(urlString)) {
+                UrlInfo existingInfo = dupMap.get(urlString);
+                int newvalue = existingInfo.termFrequency + tempInfo.termFrequency;
+                existingInfo = new UrlInfo(urlString, existingInfo.title, existingInfo.citation, newvalue);
+                dupMap.put(urlString, existingInfo);
+            } else {
+                dupMap.put(urlString, tempInfo);
+            }
+        }
+        // Retrive values to list
+        List<UrlInfo> finaList = new ArrayList<>(dupMap.values());
+        // Sort final list
+        finaList.sort((url1, url2) -> url2.termFrequency - url1.termFrequency);
         // timer stuff
         LocalTime endTime = LocalTime.now(); // end timer
         Duration duration = Duration.between(startTime, endTime);
         double deciseconds = duration.toMillis() / 100;
         averageExecutionTime = (averageExecutionTime + deciseconds) / 2;
-        //System.out.println(String.format("%.10f", averageExecutionTime));
-        return list;
+        return finaList;
     }
 
     // This is a semi hack.

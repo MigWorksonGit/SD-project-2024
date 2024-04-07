@@ -34,7 +34,7 @@ public class UrlInfo implements Serializable
     // public String toString()
     // {
     //     return String.format(
-    //         "-----\n%s\n%s\n%s\n%d\n-----",
+    //         "%s\n%s\n%s\n%d",
     //         title, url, citation, termFrequency
     //     );
     // }
