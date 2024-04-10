@@ -105,8 +105,8 @@ public class Client
                             List<UrlInfo> top10 = server.searchTop10(words);
                             // System.out.println("URLs containing the term '" + words[1] + "', prioritized by frequency:");
                             System.out.print("Urls containing the word(s): ");
-                            for (String wString : words) {
-                                System.out.print(wString + " ");
+                            for (int i = 1; i < words.length; i++) {
+                                System.out.print(words[i] + " ");
                             }
                             System.out.println("");
                             int counter = 0;

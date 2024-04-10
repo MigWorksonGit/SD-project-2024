@@ -53,6 +53,8 @@ public class Downloader
             try {
                 try {
                     server = (Downloader_I) Naming.lookup(lookup);
+                    MULTICAST_ADDRESS = server.getMulticastAddress();
+                    MULTICAST_PORT = server.getMulticastPort();
                 }
                 catch(MalformedURLException e) {
                     System.out.println("Server Url is incorrectly formed");

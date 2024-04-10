@@ -27,4 +27,12 @@ public class BarrelServer extends UnicastRemoteObject implements Barrel_I
     public void removeBarrel(int index) throws RemoteException {
         server.removeBarrel(index);
     }
+
+    public String getMulticastAddress() throws RemoteException {
+        return server.getMulticastAddress();
+    }
+
+    public int getMulticastPort() throws RemoteException {
+        return server.getMulticastPort();
+    }
 }

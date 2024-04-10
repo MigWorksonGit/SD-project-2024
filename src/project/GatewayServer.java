@@ -24,6 +24,11 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     static ClientServer clientServer;
     static DownloaderServer downloaderServer;
     static BarrelServer barrelServer;
+    // Multicast stuff
+    static String MULTICAST_ADDRESS;
+    static String MULTICAST_PORT;
+    public String getMulticastAddress() { return MULTICAST_ADDRESS; }
+    public int getMulticastPort() { return Integer.parseInt(MULTICAST_PORT); }
 
     // Queue
     Semaphore mutex = new Semaphore(0);
@@ -44,14 +49,24 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     }
 
     public static void main(String[] args) {
-        if (args.length != 1) {
-            System.out.println("Please give the port number as an argument");
+        if (args.length != 3) {
+            System.out.println("Please give the port, multicast ip, multicast port as an argument");
             System.exit(0);
         }
         String PORT = args[0];
+        MULTICAST_ADDRESS = args[1];
+        MULTICAST_PORT = args[2];
         // Test if integer
         if (!validPort(PORT)) {
             System.out.println("Number is not an Integer");
+            System.exit(0);
+        }
+        if (!validIpv4(MULTICAST_ADDRESS)) {
+            System.out.println("Bad multicast address");
+            System.exit(0);
+        }
+        if (!validPort(MULTICAST_PORT) || PORT.equals(MULTICAST_PORT)) {
+            System.out.println("Bad multicast port");
             System.exit(0);
         }
         // Main server creation
@@ -274,6 +289,20 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         info.append(getAliveBarrelName());
 
         return info.toString();
+    }
+
+    public static boolean validIpv4(String ip) {
+        try {
+            if (ip.equals("localhost")) return true;
+            String[] parts = ip.split("\\.");
+            if (parts.length != 4) return false;
+            for (String s : parts) {
+                int i = Integer.parseInt(s);
+                if (i<0 || i > 255) return false;
+            }
+            if (ip.endsWith(".")) return false;
+            return true;
+        } catch (NumberFormatException e) { return false; }
     }
 
     public static boolean validPort(String port) {

@@ -27,4 +27,12 @@ public class DownloaderServer extends UnicastRemoteObject implements Downloader_
     public void indexUrl2(UrlQueueElement element) throws RemoteException {
         server.indexUrl(element);
     }
+
+    public String getMulticastAddress() throws RemoteException {
+        return server.getMulticastAddress();
+    }
+
+    public int getMulticastPort() throws RemoteException {
+        return server.getMulticastPort();
+    }
 }

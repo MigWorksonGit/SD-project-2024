@@ -107,6 +107,8 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                         // SUBSCRIBE BARREL TO SERVER!!!
                         Barrel myself  = new Barrel();
                         server.subscribeBarrel((Barrel_C_I) myself);
+                        MULTICAST_ADDRESS = server.getMulticastAddress();
+                        MULTICAST_PORT = server.getMulticastPort();
                     }
                     catch(MalformedURLException e) {
                         System.out.println("Server Url is incorrectly formed");
