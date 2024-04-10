@@ -2,6 +2,7 @@ package project;
 
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -43,6 +44,16 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     }
 
     public static void main(String[] args) {
+        if (args.length != 1) {
+            System.out.println("Please give the port number as an argument");
+            System.exit(0);
+        }
+        String PORT = args[0];
+        // Test if integer
+        if (!validPort(PORT)) {
+            System.out.println("Number is not an Integer");
+            System.exit(0);
+        }
         // Main server creation
         GatewayServer server = null;
         try {
@@ -51,10 +62,18 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
             System.out.println("Failure to create server");
             System.exit(0);
         }
+        // criar registry once -> have port as an argument
+        Registry registry = null;
+        try {
+            registry = LocateRegistry.createRegistry(Integer.parseInt(PORT));
+        } catch (RemoteException e) {
+            System.out.println("Failed to create regisry on port " + PORT);
+            System.exit(0);
+        }
         // Client Server
         try {
             clientServer = new ClientServer(server);
-            LocateRegistry.createRegistry(1099).rebind("client", clientServer);
+            registry.rebind("client", clientServer);
             System.out.println("Client Server is ready");
         } catch (RemoteException re) {
 			System.out.println("Exception in Client Server: " + re);
@@ -63,7 +82,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         // Downloader Server
         try {
             downloaderServer = new DownloaderServer(server);
-            LocateRegistry.createRegistry(1098).rebind("downloader", downloaderServer);
+            registry.rebind("downloader", downloaderServer);
             System.out.println("Downloader Server is ready");
         } catch (RemoteException re) {
 			System.out.println("Exception in Downloader Server: " + re);
@@ -72,7 +91,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         // Barrel Server
         try {
             barrelServer = new BarrelServer(server);
-            LocateRegistry.createRegistry(1097).rebind("barrel", barrelServer);
+            registry.rebind("barrel", barrelServer);
             System.out.println("Barrel Server is ready");
         } catch (RemoteException re) {
 			System.out.println("Exception in Barrel Server: " + re);
@@ -255,5 +274,14 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         info.append(getAliveBarrelName());
 
         return info.toString();
+    }
+
+    public static boolean validPort(String port) {
+        try {
+            Integer.parseInt(port);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 }

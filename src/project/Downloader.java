@@ -32,12 +32,27 @@ public class Downloader
     private static int MULTICAST_PORT = 4446;
 
     public static void main(String[] args) {
+        if (args.length != 2) {
+            System.out.println("Wrong number of arguments. Please insert Ip and Port");
+            System.exit(0);
+        }
+        String IP = args[0];
+        String PORT = args[1];
+        if (!validIpv4(IP)) {
+            System.out.println("Not a valid IP address");
+            System.exit(0);
+        }
+        if (!validPort(PORT)) {
+            System.out.println("Number is not an Integer");
+            System.exit(0);
+        }
+        String lookup = "rmi://" + IP + ":" + PORT + "/downloader";
         try {
             Downloader_I server = null;
             // Try and give correct error messages and such
             try {
                 try {
-                    server = (Downloader_I) Naming.lookup("rmi://localhost:1098/downloader");
+                    server = (Downloader_I) Naming.lookup(lookup);
                 }
                 catch(MalformedURLException e) {
                     System.out.println("Server Url is incorrectly formed");
@@ -91,7 +106,7 @@ public class Downloader
         }
     }
 
-    static String removerPontuação(String text) {
+    static String removerPontuacao(String text) {
         if (text == null) return "";
         String temp = text.replaceAll("[.,;:\\\"'?!|«»()\\[\\]{}-]", "");
         return temp;
@@ -113,7 +128,7 @@ public class Downloader
             WebPage newpage = new WebPage(url, doc.title(), "no_result", father_url);
             while (tokens.hasMoreElements())
             {
-                word = removerPontuação(tokens.nextToken().strip().toLowerCase());
+                word = removerPontuacao(tokens.nextToken().strip().toLowerCase());
                 if (!word.matches("[a-zA-Z].*")) {
                     continue;
                 }
@@ -205,6 +220,29 @@ public class Downloader
         catch (IOException e) {
             System.out.println("IO exception found in process_url " + e);
             throw new IOException();
+        }
+    }
+
+    public static boolean validIpv4(String ip) {
+        try {
+            if (ip.equals("localhost")) return true;
+            String[] parts = ip.split("\\.");
+            if (parts.length != 4) return false;
+            for (String s : parts) {
+                int i = Integer.parseInt(s);
+                if (i<0 || i > 255) return false;
+            }
+            if (ip.endsWith(".")) return false;
+            return true;
+        } catch (NumberFormatException e) { return false; }
+    }
+
+    public static boolean validPort(String port) {
+        try {
+            Integer.parseInt(port);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
         }
     }
 }

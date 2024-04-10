@@ -16,12 +16,26 @@ public class Client
     static int DEBUG_recursion_level = 2;
 
     public static void main(String[] args) {
+        if (args.length != 2) {
+            System.out.println("Wrong number of arguments. Please insert Ip and Port");
+            System.exit(0);
+        }
+        String IP = args[0];
+        String PORT = args[1];
+        if (!validIpv4(IP)) {
+            System.out.println("Not a valid IP address");
+            System.exit(0);
+        }
+        if (!validPort(PORT)) {
+            System.out.println("Number is not an Integer");
+            System.exit(0);
+        }
+        String lookup = "rmi://" + IP + ":" + PORT + "/client";
         try {
             Client_I server = null;
-            // Try and give correct error messages and such
             try {
                 try {
-                    server = (Client_I) Naming.lookup("rmi://localhost:1099/client");
+                    server = (Client_I) Naming.lookup(lookup);
                 }
                 catch(MalformedURLException e) {
                     System.out.println("Server Url is incorrectly formed");
@@ -47,7 +61,8 @@ public class Client
                 while (true) {
                     try {
                         try {
-                            server = (Client_I) Naming.lookup("rmi://localhost:1099/client");
+                            // Also here dont forget
+                            server = (Client_I) Naming.lookup(lookup);
                         }
                         catch(MalformedURLException e) {
                             System.out.println("Server Url is incorrectly formed");
@@ -149,6 +164,29 @@ public class Client
         }
         catch (Exception e) {
             System.out.println("Exception in main: " + e);
+        }
+    }
+
+    public static boolean validIpv4(String ip) {
+        try {
+            if (ip.equals("localhost")) return true;
+            String[] parts = ip.split("\\.");
+            if (parts.length != 4) return false;
+            for (String s : parts) {
+                int i = Integer.parseInt(s);
+                if (i<0 || i > 255) return false;
+            }
+            if (ip.endsWith(".")) return false;
+            return true;
+        } catch (NumberFormatException e) { return false; }
+    }
+
+    public static boolean validPort(String port) {
+        try {
+            Integer.parseInt(port);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
         }
     }
 }

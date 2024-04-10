@@ -67,6 +67,21 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     }
 
     public static void main(String[] args) {
+        if (args.length != 2) {
+            System.out.println("Wrong number of arguments. Please insert Ip and Port");
+            System.exit(0);
+        }
+        String IP = args[0];
+        String PORT = args[1];
+        if (!validIpv4(IP)) {
+            System.out.println("Not a valid IP address");
+            System.exit(0);
+        }
+        if (!validPort(PORT)) {
+            System.out.println("Number is not an Integer");
+            System.exit(0);
+        }
+        String lookup = "rmi://" + IP + ":" + PORT + "/barrel";
         // Detect shutdown
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             // System.out.println("HAHAHA");
@@ -88,7 +103,7 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                 // Try and give correct error messages and such
                 try {
                     try {
-                        server = (Barrel_I) Naming.lookup("rmi://localhost:1097/barrel");
+                        server = (Barrel_I) Naming.lookup(lookup);
                         // SUBSCRIBE BARREL TO SERVER!!!
                         Barrel myself  = new Barrel();
                         server.subscribeBarrel((Barrel_C_I) myself);
@@ -311,6 +326,29 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     // the return variable will not be catched. We just care about the exception.
     public boolean isAlive() throws RemoteException {
         return true;
+    }
+
+    public static boolean validIpv4(String ip) {
+        try {
+            if (ip.equals("localhost")) return true;
+            String[] parts = ip.split("\\.");
+            if (parts.length != 4) return false;
+            for (String s : parts) {
+                int i = Integer.parseInt(s);
+                if (i<0 || i > 255) return false;
+            }
+            if (ip.endsWith(".")) return false;
+            return true;
+        } catch (NumberFormatException e) { return false; }
+    }
+
+    public static boolean validPort(String port) {
+        try {
+            Integer.parseInt(port);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 }
 
