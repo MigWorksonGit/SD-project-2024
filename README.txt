@@ -17,16 +17,26 @@ Example:
 java -cp "bin;lib/*" project.GatewayServer 1099 230.0.0.1 4446
 java -cp "bin;lib/*" project.Client localhost 1099
 java -cp "bin;lib/*" project.Downloader localhost 1099
-java -cp "bin;lib/*" project.barrel localhost 1099
+java -cp "bin;lib/*" project.Barrel localhost 1099
 
 Webpage has: url, title, citation, number_of_fathers
 I want to send:
 word,
 Index: word, List<url, title, citation, number_of_fathers> -> word, List<Webpage>
 
-Properties "file" :
-endrreço da máquina
-porto dos barrel
-portos dos downaloder
-porto dos clientes
+Relatório:
+Onde que as coisas podem falhar? -> explicar melhor
+testes -> não é teste unitários. Explica os TESTES que TU FIZESTE (para ver se o programa funcionava),
+    mesmo sendo testes unitários, escrevemos oque 
+    
+Tem de ser interseção de páginas, não união -> DONE
+-> https://eden.dei.uc.pt/~rbarbosa/sd, pelo menos 5 páginas -> DONE
 
+decasegundos não é 0.1 segundos burrrrrrooooo
+
+-> colocar os barrels a tratarem to partiotaning das pages. Permiter com que eles entreguem 10 páginas de cada vez.
+Uma variavél a tratar de onde estamos?
+
+
+howcroft@dei.uc.pt
+https://eden.dei.uc.pt/~rbarbosa/sd

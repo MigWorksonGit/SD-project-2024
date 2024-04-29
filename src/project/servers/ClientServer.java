@@ -37,4 +37,8 @@ public class ClientServer extends UnicastRemoteObject implements Client_I
     public String getAdminInfo() throws RemoteException {
         return server.getAdminInfo();
     }
+
+    public List<UrlInfo> searchTop10_BarrelPartition(String[] term, int page) throws RemoteException {
+        return server.searchTop10_barrelPartition(term, page);
+    }
 }

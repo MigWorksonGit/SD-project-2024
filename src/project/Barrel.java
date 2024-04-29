@@ -279,6 +279,66 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     }
 
     // Search for URLs containing a given term
+    public List<UrlInfo> searchTop10_BarrelPartition(String[] term, int page) throws RemoteException {
+        LocalTime startTime = LocalTime.now(); // start timer
+        List<UrlInfo> list = new ArrayList<>();
+        for (int i = 1; i < term.length; i++) {
+            Map<String, UrlInfo> urlFrequency = invertedIndex.getOrDefault(term[i], Collections.emptyMap());
+            List<UrlInfo> urls = new ArrayList<>(urlFrequency.values());
+            list.addAll(urls);
+        }
+        // If there is only one word to search for
+        if (term.length == 2) {
+            list.sort((url1, url2) -> url2.termFrequency - url1.termFrequency);
+            // create new list
+            List<UrlInfo> finalList = new ArrayList<>();
+            for (int i = page; i < Math.min(list.size(), page+10); i++) {
+                finalList.add(list.get(i));
+            }
+            // timer stuff
+            LocalTime endTime = LocalTime.now(); // end timer
+            Duration duration = Duration.between(startTime, endTime);
+            double deciseconds = duration.toMillis() / 100;
+            averageExecutionTime = (averageExecutionTime + deciseconds) / 2;
+            return finalList;
+        }
+        // else, if more than 1 word
+        // DO NOT COMBINE the values of duplicate urls -> choose only those the those 2 words
+        List<UrlInfo> duplicateList = new ArrayList<>();
+        // Object[] { UrlInfo, true or false, true if its duplicate }
+        Map<String, Object[]> dupMap = new HashMap<>();
+        for (UrlInfo tempInfo : list) {
+            String urlString = tempInfo.url;
+            if (dupMap.containsKey(urlString)) {
+                UrlInfo existingInfo = (UrlInfo) dupMap.get(urlString)[0];
+                int newvalue = existingInfo.termFrequency + tempInfo.termFrequency;
+                existingInfo = new UrlInfo(urlString, existingInfo.title, existingInfo.citation, newvalue);
+                dupMap.put(urlString, new Object[]{tempInfo, true});
+            } else {
+                dupMap.put(urlString, new Object[]{tempInfo, false});
+            }
+        }
+        for (String url : dupMap.keySet()) {
+            if ((boolean)dupMap.get(url)[1] == true) {
+                duplicateList.add((UrlInfo) dupMap.get(url)[0]);
+            }
+        }
+        // Sort final list
+        duplicateList.sort((url1, url2) -> url2.termFrequency - url1.termFrequency);
+        // create new list
+        List<UrlInfo> finalList = new ArrayList<>();
+        for (int i = page; page < Math.min(duplicateList.size(), page + 10); i++) {
+            finalList.add(duplicateList.get(i));
+        }
+        // timer stuff
+        LocalTime endTime = LocalTime.now(); // end timer
+        Duration duration = Duration.between(startTime, endTime);
+        double deciseconds = duration.toMillis() / 100;
+        averageExecutionTime = (averageExecutionTime + deciseconds) / 2;
+        return finalList;
+    }
+
+    // Search for URLs containing a given term
     public List<UrlInfo> searchTop10(String[] term) throws RemoteException {
         LocalTime startTime = LocalTime.now(); // start timer
         List<UrlInfo> list = new ArrayList<>();
@@ -298,30 +358,79 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
             return list;
         }
         // else, if more than 1 word
-        // Combine the values of duplicate urls
-        Map<String, UrlInfo> dupMap = new HashMap<>();
+        // DO NOT COMBINE the values of duplicate urls -> choose only those the those 2 words
+        List<UrlInfo> duplicateList = new ArrayList<>();
+        // Object[] { UrlInfo, true or false, true if its duplicate }
+        Map<String, Object[]> dupMap = new HashMap<>();
         for (UrlInfo tempInfo : list) {
             String urlString = tempInfo.url;
             if (dupMap.containsKey(urlString)) {
-                UrlInfo existingInfo = dupMap.get(urlString);
+                UrlInfo existingInfo = (UrlInfo) dupMap.get(urlString)[0];
                 int newvalue = existingInfo.termFrequency + tempInfo.termFrequency;
                 existingInfo = new UrlInfo(urlString, existingInfo.title, existingInfo.citation, newvalue);
-                dupMap.put(urlString, existingInfo);
+                dupMap.put(urlString, new Object[]{tempInfo, true});
             } else {
-                dupMap.put(urlString, tempInfo);
+                dupMap.put(urlString, new Object[]{tempInfo, false});
             }
         }
-        // Retrive values to list
-        List<UrlInfo> finaList = new ArrayList<>(dupMap.values());
+        for (String url : dupMap.keySet()) {
+            if ((boolean)dupMap.get(url)[1] == true) {
+                duplicateList.add((UrlInfo) dupMap.get(url)[0]);
+            }
+        }
         // Sort final list
-        finaList.sort((url1, url2) -> url2.termFrequency - url1.termFrequency);
+        duplicateList.sort((url1, url2) -> url2.termFrequency - url1.termFrequency);
         // timer stuff
         LocalTime endTime = LocalTime.now(); // end timer
         Duration duration = Duration.between(startTime, endTime);
         double deciseconds = duration.toMillis() / 100;
         averageExecutionTime = (averageExecutionTime + deciseconds) / 2;
-        return finaList;
+        return duplicateList;
     }
+
+    // public List<UrlInfo> searchTop10(String[] term) throws RemoteException {
+    //     LocalTime startTime = LocalTime.now(); // start timer
+    //     List<UrlInfo> list = new ArrayList<>();
+    //     for (int i = 1; i < term.length; i++) {
+    //         Map<String, UrlInfo> urlFrequency = invertedIndex.getOrDefault(term[i], Collections.emptyMap());
+    //         List<UrlInfo> urls = new ArrayList<>(urlFrequency.values());
+    //         list.addAll(urls);
+    //     }
+    //     // If there is only one word to search for
+    //     if (term.length == 2) {
+    //         list.sort((url1, url2) -> url2.termFrequency - url1.termFrequency);
+    //         // timer stuff
+    //         LocalTime endTime = LocalTime.now(); // end timer
+    //         Duration duration = Duration.between(startTime, endTime);
+    //         double deciseconds = duration.toMillis() / 100;
+    //         averageExecutionTime = (averageExecutionTime + deciseconds) / 2;
+    //         return list;
+    //     }
+    //     // else, if more than 1 word
+    //     // Combine the values of duplicate urls
+    //     Map<String, UrlInfo> dupMap = new HashMap<>();
+    //     for (UrlInfo tempInfo : list) {
+    //         String urlString = tempInfo.url;
+    //         if (dupMap.containsKey(urlString)) {
+    //             UrlInfo existingInfo = dupMap.get(urlString);
+    //             int newvalue = existingInfo.termFrequency + tempInfo.termFrequency;
+    //             existingInfo = new UrlInfo(urlString, existingInfo.title, existingInfo.citation, newvalue);
+    //             dupMap.put(urlString, existingInfo);
+    //         } else {
+    //             dupMap.put(urlString, tempInfo);
+    //         }
+    //     }
+    //     // Retrive values to list
+    //     List<UrlInfo> finaList = new ArrayList<>(dupMap.values());
+    //     // Sort final list
+    //     finaList.sort((url1, url2) -> url2.termFrequency - url1.termFrequency);
+    //     // timer stuff
+    //     LocalTime endTime = LocalTime.now(); // end timer
+    //     Duration duration = Duration.between(startTime, endTime);
+    //     double deciseconds = duration.toMillis() / 100;
+    //     averageExecutionTime = (averageExecutionTime + deciseconds) / 2;
+    //     return finaList;
+    // }
 
     // This is a semi hack.
     // If the barrel is not Alive it returns RemoteException.

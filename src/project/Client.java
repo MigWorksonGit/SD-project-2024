@@ -13,7 +13,7 @@ import project.resources.UrlQueueElement;
 
 public class Client
 {
-    static int DEBUG_recursion_level = 2;
+    static int DEBUG_recursion_level = 10;
 
     public static void main(String[] args) {
         if (args.length != 2) {
@@ -101,9 +101,40 @@ public class Client
                     }
                     else
                     if (words[0].equals("search")) {
+                        // try {
+                        //     //List<UrlInfo> top10 = server.searchTop10(words);
+                        //     // System.out.println("URLs containing the term '" + words[1] + "', prioritized by frequency:");
+                        //     System.out.print("Urls containing the word(s): ");
+                        //     for (int i = 1; i < words.length; i++) {
+                        //         System.out.print(words[i] + " ");
+                        //     }
+                        //     System.out.println("");
+                        //     int counter = 0;
+                        //     loop:
+                        //     do {
+                        //         for (int i = counter; i < counter+10; i++) {
+                        //             if (i == top10.size()) {
+                        //                 System.out.println("-----");
+                        //                 break loop;
+                        //             }
+                        //             System.out.println("-----");
+                        //             System.out.println(top10.get(i));
+                        //         }
+                        //         System.out.println("Input \"next\" for next set of pages, \"end\" to stop");
+                        //         input = sc.nextLine();
+                        //         if (input.equals("end")) break;
+                        //         else if (input.equals("next")) {
+                        //             counter += 10;
+                        //         }
+                        //         else {
+                        //             System.out.println("Wrong input, backing out...");
+                        //             break;
+                        //         }
+                        //     } while (true);
+                        // } catch (RemoteException e) {
+                        //     System.out.println("Cant connect to barrels");
+                        // }
                         try {
-                            List<UrlInfo> top10 = server.searchTop10(words);
-                            // System.out.println("URLs containing the term '" + words[1] + "', prioritized by frequency:");
                             System.out.print("Urls containing the word(s): ");
                             for (int i = 1; i < words.length; i++) {
                                 System.out.print(words[i] + " ");
@@ -112,8 +143,10 @@ public class Client
                             int counter = 0;
                             loop:
                             do {
-                                for (int i = counter; i < counter+10; i++) {
-                                    if (i == top10.size()) {
+                                List<UrlInfo> top10 = server.searchTop10_BarrelPartition(words, counter);
+                                for (int i = 0; i < top10.size(); i++) {
+                                    // Does not work correctly. Please fix.
+                                    if (top10.size() == 0) {
                                         System.out.println("-----");
                                         break loop;
                                     }

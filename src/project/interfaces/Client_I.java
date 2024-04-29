@@ -14,4 +14,5 @@ public interface Client_I extends Remote
     public List<String> getUrlsConnected2this(String msg) throws RemoteException;
     public List<UrlInfo> searchTop10(String[] term) throws RemoteException;
     public String getAdminInfo() throws RemoteException;
+    public List<UrlInfo> searchTop10_BarrelPartition(String[] term, int page) throws RemoteException;
 }

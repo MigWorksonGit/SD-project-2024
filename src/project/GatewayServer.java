@@ -248,6 +248,56 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         }
     }
 
+    public List<UrlInfo> searchTop10_barrelPartition(String[] term, int page) throws RemoteException {
+        // also do stuff here !!!! check if empty and such
+        if (active_barrel_idx.isEmpty()) {
+            throw new RemoteException();
+        }
+        try {
+            list_mutex.acquire();
+            for (int i = 1; i < term.length; i++) {
+                boolean hasElement = false;
+                for (Object[] tuple : threadSafeList) {
+                    if (term[i].toLowerCase().equals((String) tuple[0])) {
+                        tuple[1] = (int) tuple[1] + 1;
+                        hasElement = true;
+                        break;
+                    }
+                }
+                if (!hasElement) {
+                    threadSafeList.add(new Object[]{term[i].toLowerCase(), 1});
+                }
+            }
+            list_mutex.release();
+        } catch (InterruptedException e) {
+            System.out.println("SearchTop10: list mutex interrupted");
+        }
+        try {
+            int retries = 3;
+            while (true) {
+                try {
+                    if (active_barrel_idx.isEmpty()) {
+                        throw new RemoteException();
+                    }
+                    if (active_barrel_idx.contains(rr_index)) {
+                        return barrels.get(rr_index++).searchTop10_BarrelPartition(term, page);
+                    }
+                    if (rr_index >= num_of_barrels) {
+                        rr_index = 0;
+                        continue;
+                    }
+                    rr_index++;
+                } catch (RemoteException e) {
+                    retries--;
+                    if (retries == 0) throw new RemoteException();
+                }
+            }
+        } catch (RemoteException e) {
+            System.out.println("Hahaha remote exception " + e);
+            throw new RemoteException();
+        }
+    }
+
     // Get alive barrels name
     public String getAliveBarrelName() {
         StringBuilder info = new StringBuilder();

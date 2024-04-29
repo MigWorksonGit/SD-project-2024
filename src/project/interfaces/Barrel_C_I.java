@@ -14,4 +14,5 @@ public interface Barrel_C_I extends Remote
     public void setName(String newName) throws RemoteException;
     public String getName() throws RemoteException;
     public double getAvgExeTime() throws RemoteException;
+    public List<UrlInfo> searchTop10_BarrelPartition(String[] term, int page) throws RemoteException;
 }
