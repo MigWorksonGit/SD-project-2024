@@ -1,6 +1,8 @@
 package project;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
@@ -21,31 +23,35 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.jsoup.nodes.Element;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
+import project.beans.UrlQueueElement;
+import project.beans.WebPage;
 import project.interfaces.Downloader_I;
-import project.resources.Message;
-import project.resources.UrlQueueElement;
-import project.resources.WebPage;
+import project.beans.Message;
 
 public class Downloader
 {
     private static String MULTICAST_ADDRESS = "230.0.0.1";
     private static int MULTICAST_PORT = 4446;
-
+    
     public static void main(String[] args) {
-        if (args.length != 2) {
-            System.out.println("Wrong number of arguments. Please insert Ip and Port");
+        // Dont forget to check if stuff is valid
+        String filepath = "config/config.json";
+        String IP = null;
+        String PORT = null;
+        try {
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(filepath));
+            Gson gson = new Gson();
+            JsonObject json = gson.fromJson(bufferedReader, JsonObject.class);
+            IP = json.get("IpAddress").getAsString();
+            PORT = json.get("Port").getAsString();
+        } catch (Exception e) {
+            System.out.println("Json file does not exist");
             System.exit(0);
         }
-        String IP = args[0];
-        String PORT = args[1];
-        if (!validIpv4(IP)) {
-            System.out.println("Not a valid IP address");
-            System.exit(0);
-        }
-        if (!validPort(PORT)) {
-            System.out.println("Number is not an Integer");
-            System.exit(0);
-        }
+        // RMI connection
         String lookup = "rmi://" + IP + ":" + PORT + "/downloader";
         try {
             Downloader_I server = null;
@@ -80,13 +86,13 @@ public class Downloader
                 multicastSocket = new MulticastSocket();
                 while (true)
                 {
-                    element = server.removeUrl2();
+                    element = server.removeUrl();
                     try {
-                        process_url(element.url, element.father_url, element.recursion_level, multicastSocket, server);
+                        process_url(element.getUrl(), element.getFatherUrl(), element.getRecursionLvel(), multicastSocket, server);
                     } catch (SocketTimeoutException e) {
                         // Add element to queue in this case
                         // Block if there are no downloaders?
-                        server.indexUrl2(element);
+                        server.indexUrl(element);
                     } catch (IOException e) {
                         continue;
                     }
@@ -138,7 +144,8 @@ public class Downloader
                     continue;
                 }
 
-                newpage.citation = "no_result";
+                // newpage.citation = "no_result";
+                newpage.setCitation("no_result");
                 // get paragraph with word
                 Element pContainsWord = null;
                 for (Element p : doc.select("p")) {
@@ -167,7 +174,8 @@ public class Downloader
                             result.append(temp.get(i)).append(" ");
                         }
                     }
-                    newpage.citation = result.toString().trim();
+                    // newpage.citation = result.toString().trim();
+                    newpage.setCitation(result.toString().trim());
                 } else {
                     Element pFirst = doc.select("p").first();
                     if (pFirst != null) {
@@ -176,7 +184,8 @@ public class Downloader
                         for (int i = 0; i < Math.min(paragraph.length, 10); i++) {
                             limitedText.append(paragraph[i]).append(" ");
                         }
-                        newpage.citation = limitedText.toString().toLowerCase();
+                        // newpage.citation = limitedText.toString().toLowerCase();
+                        newpage.setCitation(limitedText.toString().toLowerCase());
                     }
                 }
 
@@ -212,7 +221,7 @@ public class Downloader
             String newUrl;
             for (Element link : links) {
                 newUrl = link.attr("abs:href");
-                server.indexUrl2(new UrlQueueElement(newUrl, recursive-1, url));
+                server.indexUrl(new UrlQueueElement(newUrl, recursive-1, url));
             }
         } 
         catch (SocketTimeoutException e) {
@@ -222,29 +231,6 @@ public class Downloader
         catch (IOException e) {
             System.out.println("IO exception found in process_url " + e);
             throw new IOException();
-        }
-    }
-
-    public static boolean validIpv4(String ip) {
-        try {
-            if (ip.equals("localhost")) return true;
-            String[] parts = ip.split("\\.");
-            if (parts.length != 4) return false;
-            for (String s : parts) {
-                int i = Integer.parseInt(s);
-                if (i<0 || i > 255) return false;
-            }
-            if (ip.endsWith(".")) return false;
-            return true;
-        } catch (NumberFormatException e) { return false; }
-    }
-
-    public static boolean validPort(String port) {
-        try {
-            Integer.parseInt(port);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
         }
     }
 }

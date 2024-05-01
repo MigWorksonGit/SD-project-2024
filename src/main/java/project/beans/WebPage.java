@@ -1,13 +1,13 @@
-package project.resources;
+package project.beans;
 
 import java.io.Serializable;
 
 public class WebPage implements Serializable
 {
-    public String url;
-    public String title;
-    public String citation;
-    public String fatherUrl;
+    private String url;
+    private String title;
+    private String citation;
+    private String fatherUrl;
     
     public WebPage(String url, String title, String citation, String fatherUrl) {
         this.url = url;
@@ -15,6 +15,17 @@ public class WebPage implements Serializable
         this.citation = citation;
         this.fatherUrl = fatherUrl;
     }
+
+    // Setters
+    public void setCitation(String citation) {
+        this.citation = citation;
+    }
+
+    // Getters
+    public String getUrl() { return url; }
+    public String getTitle() { return title; }
+    public String getCitation() { return citation; }
+    public String getFatherUrl() { return fatherUrl; }
 
     @Override
     public String toString()

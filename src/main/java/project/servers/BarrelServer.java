@@ -16,10 +16,6 @@ public class BarrelServer extends UnicastRemoteObject implements Barrel_I
         this.server = server;
     }
 
-    public void print_on_server(String msg) throws RemoteException {
-        System.out.println(msg);
-    }
-
     public void subscribeBarrel(Barrel_C_I barrel) throws RemoteException {
         server.addBarel(barrel);
     }

@@ -1,4 +1,4 @@
-package project.resources;
+package project.beans;
 
 import java.io.Serializable;
 import java.util.ArrayList;

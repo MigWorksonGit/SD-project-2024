@@ -1,5 +1,7 @@
 package project;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -10,10 +12,13 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
+import project.beans.UrlInfo;
+import project.beans.UrlQueueElement;
 import project.interfaces.Barrel_C_I;
 import project.interfaces.Gateway_I;
-import project.resources.UrlInfo;
-import project.resources.UrlQueueElement;
 import project.servers.BarrelServer;
 import project.servers.ClientServer;
 import project.servers.DownloaderServer;
@@ -24,6 +29,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     static ClientServer clientServer;
     static DownloaderServer downloaderServer;
     static BarrelServer barrelServer;
+
     // Multicast stuff
     static String MULTICAST_ADDRESS;
     static String MULTICAST_PORT;
@@ -39,8 +45,8 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     private ArrayList<Integer> active_barrel_idx = new ArrayList<>();
     private ArrayList<Barrel_C_I> barrels = new ArrayList<>();
     int rr_index = 0;
+
     // Thread safe list.
-    // Object[0] is the word, Object[1] is the number of times that word was searched
     Semaphore list_mutex = new Semaphore(1);
     private ArrayList<Object[]> threadSafeList = new ArrayList<>();
 
@@ -49,27 +55,22 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     }
 
     public static void main(String[] args) {
-        if (args.length != 3) {
-            System.out.println("Please give the port, multicast ip, multicast port as an argument");
+        // Dont forget to check if stuff is valid
+        String filepath = "config/config.json";
+        String PORT = null;
+        try {
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(filepath));
+            Gson gson = new Gson();
+            JsonObject json = gson.fromJson(bufferedReader, JsonObject.class);
+            PORT = json.get("Port").getAsString();
+            MULTICAST_ADDRESS = json.get("MulticastAddress").getAsString();
+            MULTICAST_PORT = json.get("MulticastPort").getAsString();
+        } catch (Exception e) {
+            System.out.println("Json file does not exist");
             System.exit(0);
         }
-        String PORT = args[0];
-        MULTICAST_ADDRESS = args[1];
-        MULTICAST_PORT = args[2];
-        // Test if integer
-        if (!validPort(PORT)) {
-            System.out.println("Number is not an Integer");
-            System.exit(0);
-        }
-        if (!validIpv4(MULTICAST_ADDRESS)) {
-            System.out.println("Bad multicast address");
-            System.exit(0);
-        }
-        if (!validPort(MULTICAST_PORT) || PORT.equals(MULTICAST_PORT)) {
-            System.out.println("Bad multicast port");
-            System.exit(0);
-        }
-        // Main server creation
+
+        // Main server Creation
         GatewayServer server = null;
         try {
             server = new GatewayServer();
@@ -196,58 +197,6 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         }
     }
 
-    // If remote exception is received, it means the barrel on the current index
-    // has been deactivated
-    public List<UrlInfo> searchTop10(String[] term) throws RemoteException {
-        // also do stuff here !!!! check if empty and such
-        if (active_barrel_idx.isEmpty()) {
-            throw new RemoteException();
-        }
-        try {
-            list_mutex.acquire();
-            for (int i = 1; i < term.length; i++) {
-                boolean hasElement = false;
-                for (Object[] tuple : threadSafeList) {
-                    if (term[i].toLowerCase().equals((String) tuple[0])) {
-                        tuple[1] = (int) tuple[1] + 1;
-                        hasElement = true;
-                        break;
-                    }
-                }
-                if (!hasElement) {
-                    threadSafeList.add(new Object[]{term[i].toLowerCase(), 1});
-                }
-            }
-            list_mutex.release();
-        } catch (InterruptedException e) {
-            System.out.println("SearchTop10: list mutex interrupted");
-        }
-        try {
-            int retries = 3;
-            while (true) {
-                try {
-                    if (active_barrel_idx.isEmpty()) {
-                        throw new RemoteException();
-                    }
-                    if (active_barrel_idx.contains(rr_index)) {
-                        return barrels.get(rr_index++).searchTop10(term);
-                    }
-                    if (rr_index >= num_of_barrels) {
-                        rr_index = 0;
-                        continue;
-                    }
-                    rr_index++;
-                } catch (RemoteException e) {
-                    retries--;
-                    if (retries == 0) throw new RemoteException();
-                }
-            }
-        } catch (RemoteException e) {
-            System.out.println("Hahaha remote exception " + e);
-            throw new RemoteException();
-        }
-    }
-
     public List<UrlInfo> searchTop10_barrelPartition(String[] term, int page) throws RemoteException {
         // also do stuff here !!!! check if empty and such
         if (active_barrel_idx.isEmpty()) {
@@ -312,7 +261,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         }
         return info.toString();
     }
-    
+
     public String getAdminInfo() throws RemoteException {
         StringBuilder info = new StringBuilder();
         
@@ -339,28 +288,5 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         info.append(getAliveBarrelName());
 
         return info.toString();
-    }
-
-    public static boolean validIpv4(String ip) {
-        try {
-            if (ip.equals("localhost")) return true;
-            String[] parts = ip.split("\\.");
-            if (parts.length != 4) return false;
-            for (String s : parts) {
-                int i = Integer.parseInt(s);
-                if (i<0 || i > 255) return false;
-            }
-            if (ip.endsWith(".")) return false;
-            return true;
-        } catch (NumberFormatException e) { return false; }
-    }
-
-    public static boolean validPort(String port) {
-        try {
-            Integer.parseInt(port);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
     }
 }

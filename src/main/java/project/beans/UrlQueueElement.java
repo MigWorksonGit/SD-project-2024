@@ -1,18 +1,23 @@
-package project.resources;
+package project.beans;
 
 import java.io.Serializable;
 
 public class UrlQueueElement implements Serializable
 {
-    public String url;
-    public int recursion_level;
-    public String father_url;
+    private String url;
+    private int recursion_level;
+    private String father_url;
 
     public UrlQueueElement(String url, int recursion_level, String fatherUrl) {
         this.url = url;
         this.recursion_level = recursion_level;
         this.father_url = fatherUrl;
     }
+
+    // Getters
+    public String getUrl() { return url; }
+    public int getRecursionLvel() { return recursion_level; }
+    public String getFatherUrl() { return father_url; }
 
     @Override
     public String toString()

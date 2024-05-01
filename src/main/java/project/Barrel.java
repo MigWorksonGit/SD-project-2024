@@ -30,11 +30,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
 import project.interfaces.Barrel_C_I;
 import project.interfaces.Barrel_I;
-import project.resources.Message;
-import project.resources.UrlInfo;
-import project.resources.WebPage;
+import project.beans.Message;
+import project.beans.UrlInfo;
+import project.beans.WebPage;
 
 public class Barrel extends UnicastRemoteObject implements Barrel_C_I
 {
@@ -67,20 +70,21 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     }
 
     public static void main(String[] args) {
-        if (args.length != 2) {
-            System.out.println("Wrong number of arguments. Please insert Ip and Port");
+        // Dont forget to check if stuff is valid
+        String filepath = "config/config.json";
+        String IP = null;
+        String PORT = null;
+        try {
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(filepath));
+            Gson gson = new Gson();
+            JsonObject json = gson.fromJson(bufferedReader, JsonObject.class);
+            IP = json.get("IpAddress").getAsString();
+            PORT = json.get("Port").getAsString();
+        } catch (Exception e) {
+            System.out.println("Json file does not exist");
             System.exit(0);
         }
-        String IP = args[0];
-        String PORT = args[1];
-        if (!validIpv4(IP)) {
-            System.out.println("Not a valid IP address");
-            System.exit(0);
-        }
-        if (!validPort(PORT)) {
-            System.out.println("Number is not an Integer");
-            System.exit(0);
-        }
+        // RMI connection
         String lookup = "rmi://" + IP + ":" + PORT + "/barrel";
         // Detect shutdown
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -128,7 +132,7 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                 }
 
                 // create or check if file exists
-                String folderPath = "src/project/barrel_files";
+                String folderPath = "src/main/java/project/barrel_files";
                 String filename = name + ".txt";
                 File folder = new File(folderPath);
                 if (!folder.exists())
@@ -206,28 +210,28 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                         ois.close();
 
                         System.out.println(msg2receive);
-                        String word = msg2receive.word;
-                        WebPage webpage = msg2receive.page;
+                        String word = msg2receive.getWord();
+                        WebPage webpage = msg2receive.getPage();
 
                         // add if word does not exist
                         invertedIndex.putIfAbsent(word, new HashMap<>());
                         // get the Map of the word
                         Map<String, UrlInfo> urlMap = invertedIndex.get(word);
                         urlMap.putIfAbsent(
-                            webpage.url,
-                            new UrlInfo(webpage.url, webpage.title, webpage.citation, 0)
+                            webpage.getUrl(),
+                            new UrlInfo(webpage.getUrl(), webpage.getTitle(), webpage.getCitation(), 0)
                         );
-                        UrlInfo info = urlMap.get(webpage.url);
+                        UrlInfo info = urlMap.get(webpage.getUrl());
                         // Increment frequency
                         info.termFrequency += 1; 
                         // Add url to pages referencing this page
-                        info.urlsPointing2this.add(webpage.fatherUrl);
+                        info.urlsPointing2this.add(webpage.getFatherUrl());
                         // put back into map
-                        urlMap.put(webpage.url, info);
+                        urlMap.put(webpage.getUrl(), info);
                         invertedIndex.put(word, urlMap);
 
                         // Writing to file
-                        bWriter.write(word + "|" + webpage.url + "|" + webpage.title + "|" + webpage.citation + "|" + info.termFrequency + "|" + webpage.fatherUrl);
+                        bWriter.write(word + "|" + webpage.getUrl() + "|" + webpage.getTitle() + "|" + webpage.getCitation() + "|" + info.termFrequency + "|" + webpage.getFatherUrl());
                         bWriter.newLine();
 
                         // Send ACK that packet was received suceffuly
@@ -387,79 +391,4 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
         averageExecutionTime = (averageExecutionTime + deciseconds) / 2;
         return duplicateList;
     }
-
-    // public List<UrlInfo> searchTop10(String[] term) throws RemoteException {
-    //     LocalTime startTime = LocalTime.now(); // start timer
-    //     List<UrlInfo> list = new ArrayList<>();
-    //     for (int i = 1; i < term.length; i++) {
-    //         Map<String, UrlInfo> urlFrequency = invertedIndex.getOrDefault(term[i], Collections.emptyMap());
-    //         List<UrlInfo> urls = new ArrayList<>(urlFrequency.values());
-    //         list.addAll(urls);
-    //     }
-    //     // If there is only one word to search for
-    //     if (term.length == 2) {
-    //         list.sort((url1, url2) -> url2.termFrequency - url1.termFrequency);
-    //         // timer stuff
-    //         LocalTime endTime = LocalTime.now(); // end timer
-    //         Duration duration = Duration.between(startTime, endTime);
-    //         double deciseconds = duration.toMillis() / 100;
-    //         averageExecutionTime = (averageExecutionTime + deciseconds) / 2;
-    //         return list;
-    //     }
-    //     // else, if more than 1 word
-    //     // Combine the values of duplicate urls
-    //     Map<String, UrlInfo> dupMap = new HashMap<>();
-    //     for (UrlInfo tempInfo : list) {
-    //         String urlString = tempInfo.url;
-    //         if (dupMap.containsKey(urlString)) {
-    //             UrlInfo existingInfo = dupMap.get(urlString);
-    //             int newvalue = existingInfo.termFrequency + tempInfo.termFrequency;
-    //             existingInfo = new UrlInfo(urlString, existingInfo.title, existingInfo.citation, newvalue);
-    //             dupMap.put(urlString, existingInfo);
-    //         } else {
-    //             dupMap.put(urlString, tempInfo);
-    //         }
-    //     }
-    //     // Retrive values to list
-    //     List<UrlInfo> finaList = new ArrayList<>(dupMap.values());
-    //     // Sort final list
-    //     finaList.sort((url1, url2) -> url2.termFrequency - url1.termFrequency);
-    //     // timer stuff
-    //     LocalTime endTime = LocalTime.now(); // end timer
-    //     Duration duration = Duration.between(startTime, endTime);
-    //     double deciseconds = duration.toMillis() / 100;
-    //     averageExecutionTime = (averageExecutionTime + deciseconds) / 2;
-    //     return finaList;
-    // }
-
-    // This is a semi hack.
-    // If the barrel is not Alive it returns RemoteException.
-    // the return variable will not be catched. We just care about the exception.
-    public boolean isAlive() throws RemoteException {
-        return true;
-    }
-
-    public static boolean validIpv4(String ip) {
-        try {
-            if (ip.equals("localhost")) return true;
-            String[] parts = ip.split("\\.");
-            if (parts.length != 4) return false;
-            for (String s : parts) {
-                int i = Integer.parseInt(s);
-                if (i<0 || i > 255) return false;
-            }
-            if (ip.endsWith(".")) return false;
-            return true;
-        } catch (NumberFormatException e) { return false; }
-    }
-
-    public static boolean validPort(String port) {
-        try {
-            Integer.parseInt(port);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
 }
-
