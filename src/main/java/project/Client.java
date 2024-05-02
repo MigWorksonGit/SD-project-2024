@@ -18,7 +18,7 @@ import project.interfaces.Client_I;
 
 public class Client
 {
-    static int DEBUG_recursion_level = 10;
+    static int DEBUG_recursion_level = 2;
     
     public static void main(String[] args) {
         // Dont forget to check if stuff is valid
@@ -117,16 +117,16 @@ public class Client
                             int counter = 0;
                             loop:
                             do {
+                                // Error here!! when choosing 2 and both exist
                                 List<UrlInfo> top10 = server.searchTop10_BarrelPartition(words, counter);
+                                if (top10.size() == 0) {
+                                    break loop;
+                                }
                                 for (int i = 0; i < top10.size(); i++) {
-                                    // Does not work correctly. Please fix.
-                                    if (top10.size() == 0) {
-                                        System.out.println("-----");
-                                        break loop;
-                                    }
                                     System.out.println("-----");
                                     System.out.println(top10.get(i));
                                 }
+                                if (top10.size() < 10) break loop;
                                 System.out.println("Input \"next\" for next set of pages, \"end\" to stop");
                                 input = sc.nextLine();
                                 if (input.equals("end")) break;
@@ -140,6 +140,8 @@ public class Client
                             } while (true);
                         } catch (RemoteException e) {
                             System.out.println("Cant connect to barrels");
+                        } catch (Exception e) {
+                            System.out.println("Smth here");
                         }
                     }
                     else

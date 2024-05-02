@@ -307,7 +307,7 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
             return finalList;
         }
         // else, if more than 1 word
-        // DO NOT COMBINE the values of duplicate urls -> choose only those the those 2 words
+        // DO NOT COMBINE the values of duplicate urls -> choose only those the those 2 words yep
         List<UrlInfo> duplicateList = new ArrayList<>();
         // Object[] { UrlInfo, true or false, true if its duplicate }
         Map<String, Object[]> dupMap = new HashMap<>();
@@ -329,9 +329,9 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
         }
         // Sort final list
         duplicateList.sort((url1, url2) -> url2.termFrequency - url1.termFrequency);
-        // create new list
+        // // create new list
         List<UrlInfo> finalList = new ArrayList<>();
-        for (int i = page; page < Math.min(duplicateList.size(), page + 10); i++) {
+        for (int i = page; i < Math.min(duplicateList.size(), page + 10); i++) {
             finalList.add(duplicateList.get(i));
         }
         // timer stuff
