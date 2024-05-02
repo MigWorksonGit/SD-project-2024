@@ -129,7 +129,6 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         try {
             while (true) {
                 mutex.acquire();
-                //System.out.println("DEBUB semaphore working");
                 return URL_QUEUE.remove();
             }
         } catch (InterruptedException e) {
@@ -171,8 +170,6 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     }
 
     public List<String> getUrlsConnected2this(String msg) throws RemoteException {
-        // for starters lets chekc barrel 0
-        // return barrels.get(0).getUrlsConnected2this(msg);
         if (active_barrel_idx.isEmpty()) {
             throw new RemoteException();
         }
@@ -198,7 +195,6 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     }
 
     public List<UrlInfo> searchTop10_barrelPartition(String[] term, int page) throws RemoteException {
-        // also do stuff here !!!! check if empty and such
         if (active_barrel_idx.isEmpty()) {
             throw new RemoteException();
         }
@@ -247,7 +243,6 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         }
     }
 
-    // Get alive barrels name
     public String getAliveBarrelName() {
         StringBuilder info = new StringBuilder();
 
@@ -277,7 +272,6 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
                 }
             });
             for (int i = 0; i < Math.min(10, threadSafeList.size()); i++) {
-                // System.out.println(threadSafeList.get(i)[1]);
                 info.append(threadSafeList.get(i)[0].toString()).append("\n");
             }
             list_mutex.release();

@@ -67,7 +67,6 @@ public class Client
                 while (true) {
                     try {
                         try {
-                            // Also here dont forget
                             server = (Client_I) Naming.lookup(lookup);
                         }
                         catch(MalformedURLException e) {
@@ -117,7 +116,6 @@ public class Client
                             int counter = 0;
                             loop:
                             do {
-                                // Error here!! when choosing 2 and both exist
                                 List<UrlInfo> top10 = server.searchTop10_BarrelPartition(words, counter);
                                 if (top10.size() == 0) {
                                     break loop;

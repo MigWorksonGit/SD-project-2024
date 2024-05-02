@@ -88,7 +88,6 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
         String lookup = "rmi://" + IP + ":" + PORT + "/barrel";
         // Detect shutdown
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            // System.out.println("HAHAHA");
             try {
                 if (name != null) {
                     int index = Character.getNumericValue(name.charAt(name.length() - 1));
@@ -103,8 +102,6 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
             // Connect to server
             try {
                 server = null;
-                // Must make this also a unicast stuff RMI
-                // Try and give correct error messages and such
                 try {
                     try {
                         server = (Barrel_I) Naming.lookup(lookup);
@@ -147,7 +144,6 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
                     }
                 }
                 else {
-                    // unusual line terminators?
                     try {
                         FileReader fReader = new FileReader(file);
                         BufferedReader bReader = new BufferedReader(fReader);
@@ -340,55 +336,5 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
         double deciseconds = duration.toMillis() / 100;
         averageExecutionTime = (averageExecutionTime + deciseconds) / 2;
         return finalList;
-    }
-
-    // Search for URLs containing a given term
-    public List<UrlInfo> searchTop10(String[] term) throws RemoteException {
-        LocalTime startTime = LocalTime.now(); // start timer
-        List<UrlInfo> list = new ArrayList<>();
-        for (int i = 1; i < term.length; i++) {
-            Map<String, UrlInfo> urlFrequency = invertedIndex.getOrDefault(term[i], Collections.emptyMap());
-            List<UrlInfo> urls = new ArrayList<>(urlFrequency.values());
-            list.addAll(urls);
-        }
-        // If there is only one word to search for
-        if (term.length == 2) {
-            list.sort((url1, url2) -> url2.termFrequency - url1.termFrequency);
-            // timer stuff
-            LocalTime endTime = LocalTime.now(); // end timer
-            Duration duration = Duration.between(startTime, endTime);
-            double deciseconds = duration.toMillis() / 100;
-            averageExecutionTime = (averageExecutionTime + deciseconds) / 2;
-            return list;
-        }
-        // else, if more than 1 word
-        // DO NOT COMBINE the values of duplicate urls -> choose only those the those 2 words
-        List<UrlInfo> duplicateList = new ArrayList<>();
-        // Object[] { UrlInfo, true or false, true if its duplicate }
-        Map<String, Object[]> dupMap = new HashMap<>();
-        for (UrlInfo tempInfo : list) {
-            String urlString = tempInfo.url;
-            if (dupMap.containsKey(urlString)) {
-                UrlInfo existingInfo = (UrlInfo) dupMap.get(urlString)[0];
-                int newvalue = existingInfo.termFrequency + tempInfo.termFrequency;
-                existingInfo = new UrlInfo(urlString, existingInfo.title, existingInfo.citation, newvalue);
-                dupMap.put(urlString, new Object[]{tempInfo, true});
-            } else {
-                dupMap.put(urlString, new Object[]{tempInfo, false});
-            }
-        }
-        for (String url : dupMap.keySet()) {
-            if ((boolean)dupMap.get(url)[1] == true) {
-                duplicateList.add((UrlInfo) dupMap.get(url)[0]);
-            }
-        }
-        // Sort final list
-        duplicateList.sort((url1, url2) -> url2.termFrequency - url1.termFrequency);
-        // timer stuff
-        LocalTime endTime = LocalTime.now(); // end timer
-        Duration duration = Duration.between(startTime, endTime);
-        double deciseconds = duration.toMillis() / 100;
-        averageExecutionTime = (averageExecutionTime + deciseconds) / 2;
-        return duplicateList;
     }
 }

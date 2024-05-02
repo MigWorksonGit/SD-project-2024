@@ -55,7 +55,6 @@ public class Downloader
         String lookup = "rmi://" + IP + ":" + PORT + "/downloader";
         try {
             Downloader_I server = null;
-            // Try and give correct error messages and such
             try {
                 try {
                     server = (Downloader_I) Naming.lookup(lookup);
@@ -90,20 +89,17 @@ public class Downloader
                     try {
                         process_url(element.getUrl(), element.getFatherUrl(), element.getRecursionLvel(), multicastSocket, server);
                     } catch (SocketTimeoutException e) {
-                        // Add element to queue in this case
-                        // Block if there are no downloaders?
+                        // Add element back to queue
                         server.indexUrl(element);
                     } catch (IOException e) {
                         continue;
                     }
-                    //System.out.println("Downloader obtained URL: " + element.url);
                 }
             } catch (IOException e) {
                 System.out.println("Error while creating multicast or server died");
             }
             catch (NullPointerException e) {
                 System.out.println("Something thows this" + e);
-                // Idk what it is but try and recover from it
             }
             finally {
                 multicastSocket.close();
@@ -144,7 +140,6 @@ public class Downloader
                     continue;
                 }
 
-                // newpage.citation = "no_result";
                 newpage.setCitation("no_result");
                 // get paragraph with word
                 Element pContainsWord = null;
@@ -174,7 +169,6 @@ public class Downloader
                             result.append(temp.get(i)).append(" ");
                         }
                     }
-                    // newpage.citation = result.toString().trim();
                     newpage.setCitation(result.toString().trim());
                 } else {
                     Element pFirst = doc.select("p").first();
@@ -184,7 +178,6 @@ public class Downloader
                         for (int i = 0; i < Math.min(paragraph.length, 10); i++) {
                             limitedText.append(paragraph[i]).append(" ");
                         }
-                        // newpage.citation = limitedText.toString().toLowerCase();
                         newpage.setCitation(limitedText.toString().toLowerCase());
                     }
                 }
@@ -210,9 +203,7 @@ public class Downloader
 
                 multicastSocket.setSoTimeout(5000);
                 multicastSocket.receive(packetReceiver);
-                // String received = new String(packetReceiver.getData(), 0, packetReceiver.getLength());
                 System.out.println("Processed word: " + word);
-                // System.out.println("Received Acknowledgement of word: " + received);
 
                 visited_words.add(word);
             }
