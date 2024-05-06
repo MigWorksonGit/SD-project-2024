@@ -1,10 +1,10 @@
-package project.interfaces;
+package project.Meta1.interfaces;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
-import project.beans.UrlInfo;
+import project.Meta1.beans.UrlInfo;
 
 public interface Barrel_C_I extends Remote
 {

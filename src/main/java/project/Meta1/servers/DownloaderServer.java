@@ -1,11 +1,11 @@
-package project.servers;
+package project.Meta1.servers;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-import project.GatewayServer;
-import project.beans.UrlQueueElement;
-import project.interfaces.Downloader_I;
+import project.Meta1.GatewayServer;
+import project.Meta1.beans.UrlQueueElement;
+import project.Meta1.interfaces.Downloader_I;
 
 public class DownloaderServer extends UnicastRemoteObject implements Downloader_I
 {

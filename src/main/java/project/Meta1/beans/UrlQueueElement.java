@@ -1,4 +1,4 @@
-package project.beans;
+package project.Meta1.beans;
 
 import java.io.Serializable;
 

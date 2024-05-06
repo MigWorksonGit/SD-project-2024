@@ -1,4 +1,4 @@
-package project;
+package project.Meta1;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -12,9 +12,9 @@ import java.util.Scanner;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-import project.beans.UrlInfo;
-import project.beans.UrlQueueElement;
-import project.interfaces.Client_I;
+import project.Meta1.beans.UrlInfo;
+import project.Meta1.beans.UrlQueueElement;
+import project.Meta1.interfaces.Client_I;
 
 public class Client
 {

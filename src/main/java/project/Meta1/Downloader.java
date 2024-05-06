@@ -1,4 +1,4 @@
-package project;
+package project.Meta1;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -26,10 +26,10 @@ import org.jsoup.nodes.Element;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-import project.beans.UrlQueueElement;
-import project.beans.WebPage;
-import project.interfaces.Downloader_I;
-import project.beans.Message;
+import project.Meta1.beans.Message;
+import project.Meta1.beans.UrlQueueElement;
+import project.Meta1.beans.WebPage;
+import project.Meta1.interfaces.Downloader_I;
 
 public class Downloader
 {

@@ -1,4 +1,4 @@
-package project;
+package project.Meta1;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -15,13 +15,13 @@ import java.util.concurrent.Semaphore;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-import project.beans.UrlInfo;
-import project.beans.UrlQueueElement;
-import project.interfaces.Barrel_C_I;
-import project.interfaces.Gateway_I;
-import project.servers.BarrelServer;
-import project.servers.ClientServer;
-import project.servers.DownloaderServer;
+import project.Meta1.beans.UrlInfo;
+import project.Meta1.beans.UrlQueueElement;
+import project.Meta1.interfaces.Barrel_C_I;
+import project.Meta1.interfaces.Gateway_I;
+import project.Meta1.servers.BarrelServer;
+import project.Meta1.servers.ClientServer;
+import project.Meta1.servers.DownloaderServer;
 
 public class GatewayServer extends UnicastRemoteObject implements Gateway_I
 {

@@ -1,4 +1,4 @@
-package project;
+package project.Meta1;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -33,11 +33,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-import project.interfaces.Barrel_C_I;
-import project.interfaces.Barrel_I;
-import project.beans.Message;
-import project.beans.UrlInfo;
-import project.beans.WebPage;
+import project.Meta1.beans.Message;
+import project.Meta1.beans.UrlInfo;
+import project.Meta1.beans.WebPage;
+import project.Meta1.interfaces.Barrel_C_I;
+import project.Meta1.interfaces.Barrel_I;
 
 public class Barrel extends UnicastRemoteObject implements Barrel_C_I
 {

@@ -1,4 +1,4 @@
-package project.interfaces;
+package project.Meta1.interfaces;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;

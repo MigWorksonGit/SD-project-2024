@@ -1,13 +1,13 @@
-package project.servers;
+package project.Meta1.servers;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 
-import project.GatewayServer;
-import project.beans.UrlInfo;
-import project.beans.UrlQueueElement;
-import project.interfaces.Client_I;
+import project.Meta1.GatewayServer;
+import project.Meta1.beans.UrlInfo;
+import project.Meta1.beans.UrlQueueElement;
+import project.Meta1.interfaces.Client_I;
 
 public class ClientServer extends UnicastRemoteObject implements Client_I
 {

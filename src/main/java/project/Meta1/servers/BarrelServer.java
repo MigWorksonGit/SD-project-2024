@@ -1,11 +1,11 @@
-package project.servers;
+package project.Meta1.servers;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-import project.GatewayServer;
-import project.interfaces.Barrel_C_I;
-import project.interfaces.Barrel_I;
+import project.Meta1.GatewayServer;
+import project.Meta1.interfaces.Barrel_C_I;
+import project.Meta1.interfaces.Barrel_I;
 
 public class BarrelServer extends UnicastRemoteObject implements Barrel_I
 {
