@@ -30,14 +30,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-
 import project.Meta1.beans.Message;
 import project.Meta1.beans.UrlInfo;
 import project.Meta1.beans.WebPage;
 import project.Meta1.interfaces.Barrel_C_I;
 import project.Meta1.interfaces.Barrel_I;
+import project.config.ConfigFile;
 
 public class Barrel extends UnicastRemoteObject implements Barrel_C_I
 {
@@ -70,22 +68,11 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     }
 
     public static void main(String[] args) {
-        // Dont forget to check if stuff is valid
-        String filepath = "config/config.json";
-        String IP = null;
-        String PORT = null;
-        try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(filepath));
-            Gson gson = new Gson();
-            JsonObject json = gson.fromJson(bufferedReader, JsonObject.class);
-            IP = json.get("IpAddress").getAsString();
-            PORT = json.get("Port").getAsString();
-        } catch (Exception e) {
-            System.out.println("Json file does not exist");
-            System.exit(0);
-        }
+        ConfigFile data = new ConfigFile();
+        data.getJsonInfo();
+
         // RMI connection
-        String lookup = "rmi://" + IP + ":" + PORT + "/barrel";
+        String lookup = "rmi://" + data.getIp() + ":" + data.getPort() + "/barrel";
         // Detect shutdown
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {

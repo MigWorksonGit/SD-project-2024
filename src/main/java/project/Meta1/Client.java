@@ -1,7 +1,5 @@
 package project.Meta1;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
@@ -9,34 +7,20 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Scanner;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-
 import project.Meta1.beans.UrlInfo;
 import project.Meta1.beans.UrlQueueElement;
 import project.Meta1.interfaces.Client_I;
+import project.config.ConfigFile;
 
 public class Client
 {
     static int DEBUG_recursion_level = 2;
     
     public static void main(String[] args) {
-        // Dont forget to check if stuff is valid
-        String filepath = "config/config.json";
-        String IP = null;
-        String PORT = null;
-        try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(filepath));
-            Gson gson = new Gson();
-            JsonObject json = gson.fromJson(bufferedReader, JsonObject.class);
-            IP = json.get("IpAddress").getAsString();
-            PORT = json.get("Port").getAsString();
-        } catch (Exception e) {
-            System.out.println("Json file does not exist");
-            System.exit(0);
-        }
+        ConfigFile data = new ConfigFile();
+        data.getJsonInfo();
         // RMI connection
-        String lookup = "rmi://" + IP + ":" + PORT + "/client";
+        String lookup = "rmi://" + data.getIp() + ":" + data.getPort() + "/client";
         try {
             Client_I server = null;
             try {

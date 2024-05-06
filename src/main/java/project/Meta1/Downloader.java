@@ -1,8 +1,6 @@
 package project.Meta1;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
@@ -23,13 +21,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.jsoup.nodes.Element;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-
 import project.Meta1.beans.Message;
 import project.Meta1.beans.UrlQueueElement;
 import project.Meta1.beans.WebPage;
 import project.Meta1.interfaces.Downloader_I;
+import project.config.ConfigFile;
 
 public class Downloader
 {
@@ -37,22 +33,10 @@ public class Downloader
     private static int MULTICAST_PORT = 4446;
     
     public static void main(String[] args) {
-        // Dont forget to check if stuff is valid
-        String filepath = "config/config.json";
-        String IP = null;
-        String PORT = null;
-        try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(filepath));
-            Gson gson = new Gson();
-            JsonObject json = gson.fromJson(bufferedReader, JsonObject.class);
-            IP = json.get("IpAddress").getAsString();
-            PORT = json.get("Port").getAsString();
-        } catch (Exception e) {
-            System.out.println("Json file does not exist");
-            System.exit(0);
-        }
+        ConfigFile data = new ConfigFile();
+        data.getJsonInfo();
         // RMI connection
-        String lookup = "rmi://" + IP + ":" + PORT + "/downloader";
+        String lookup = "rmi://" + data.getIp() + ":" + data.getPort() + "/downloader";
         try {
             Downloader_I server = null;
             try {

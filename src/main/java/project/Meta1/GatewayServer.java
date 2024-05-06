@@ -1,7 +1,5 @@
 package project.Meta1;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -12,9 +10,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-
 import project.Meta1.beans.UrlInfo;
 import project.Meta1.beans.UrlQueueElement;
 import project.Meta1.interfaces.Barrel_C_I;
@@ -22,6 +17,7 @@ import project.Meta1.interfaces.Gateway_I;
 import project.Meta1.servers.BarrelServer;
 import project.Meta1.servers.ClientServer;
 import project.Meta1.servers.DownloaderServer;
+import project.config.ConfigFile;
 
 public class GatewayServer extends UnicastRemoteObject implements Gateway_I
 {
@@ -55,21 +51,10 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     }
 
     public static void main(String[] args) {
-        // Dont forget to check if stuff is valid
-        String filepath = "config/config.json";
-        String PORT = null;
-        try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(filepath));
-            Gson gson = new Gson();
-            JsonObject json = gson.fromJson(bufferedReader, JsonObject.class);
-            PORT = json.get("Port").getAsString();
-            MULTICAST_ADDRESS = json.get("MulticastAddress").getAsString();
-            MULTICAST_PORT = json.get("MulticastPort").getAsString();
-        } catch (Exception e) {
-            System.out.println("Json file does not exist");
-            System.exit(0);
-        }
-
+        ConfigFile data = new ConfigFile();
+        data.getJsonInfo();
+        MULTICAST_ADDRESS = data.getMulticastAddress();
+        MULTICAST_PORT = data.getMulticastPort();
         // Main server Creation
         GatewayServer server = null;
         try {
@@ -81,9 +66,9 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         // criar registry once -> have port as an argument
         Registry registry = null;
         try {
-            registry = LocateRegistry.createRegistry(Integer.parseInt(PORT));
+            registry = LocateRegistry.createRegistry(Integer.parseInt(data.getPort()));
         } catch (RemoteException e) {
-            System.out.println("Failed to create regisry on port " + PORT);
+            System.out.println("Failed to create regisry on port " + data.getPort());
             System.exit(0);
         }
         // Client Server
