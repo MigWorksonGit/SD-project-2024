@@ -42,7 +42,7 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     // Multicast
     static String MULTICAST_ADDRESS = "230.0.0.1";
     static int MULTICAST_PORT = 4446;
-
+    // test
     // Barrel variables
     static Barrel_I server = null;
     static String name;
