@@ -1,7 +1,7 @@
 mvn clean compile assembly:single
 
 for Meta1 classes:
-java -cp target/project-1.0.jar project.<class_name>
+java -cp target/project-1.0.jar project.Meta1.<class_name>
 
 Relatório:
 Onde que as coisas podem falhar? -> explicar melhor
