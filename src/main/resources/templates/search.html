@@ -1,11 +1,16 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head> 
-    <title>Getting Started: Serving Web Content</title> 
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>search url</title>
 </head>
 <body>
-    <h1>Searching!</h1>
-    <!-- <p th:text="'Poggers: ' + ${name} + '.'" /> -->
+    <h1>Search list:</h1>
+
+    <p th:text="'Poggers: ' + ${words} + '.'" />
+
+    <button type="button">Prev</button>
+    <button type="button">Next</button>
 </body>
 </html>

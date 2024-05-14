@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.List;
 
 import project.Meta1.beans.UrlQueueElement;
 import project.Meta1.interfaces.Client_I;
@@ -13,7 +14,7 @@ public class RMIbean {
     private Client_I server = null;
 
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    int DEBUG_recursion_level = 2;
+    int DEBUG_recursion_level = 10;
 
     public void connectToRMIserver() {
         // Connecting to RMI server
@@ -52,6 +53,15 @@ public class RMIbean {
         } catch (Exception e) {
             System.out.println("Cant connect to server");
         }
+    }
+
+    public List<String> getUrlsConnected2this(String words) {
+        try {
+            return server.getUrlsConnected2this(words);
+        } catch (Exception e) {
+            System.out.println("Kek");
+        }
+        return null;
     }
 
     public void printHelloWorld() {

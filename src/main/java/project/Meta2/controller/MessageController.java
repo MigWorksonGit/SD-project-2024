@@ -1,11 +1,14 @@
 package project.Meta2.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.HtmlUtils;
 
@@ -35,30 +38,39 @@ public class MessageController
         return "admin-info";
     }
 
-    @GetMapping("/indexUrl")
-    public String index(
-        @RequestParam(name="url", required=true, defaultValue="-1") String url
+    @PostMapping("/indexUrl")
+    public String indexUrl(
+        @RequestParam("url") String url, Model model
     ) {
         server.indexUrl(url, "-1");
+        model.addAttribute("url", url);
         return "indexUrl";
     }
 
-    @GetMapping("/search")
-    public String search() {
+    @PostMapping("/search")
+    public String search(
+        @RequestParam("words") String words, Model model
+    ) {
+        model.addAttribute("words", words);
         return "search";
     }
 
-    @GetMapping("/consult")
-    public String consult() {
+    @PostMapping("/consult")
+    public String consult(
+        @RequestParam("url") String url, Model model
+    ) {
+        List<String> list = server.getUrlsConnected2this(url);
+        model.addAttribute("url", url);
+        model.addAttribute("items", list);
         return "consult";
     }
 
-    @GetMapping("/greeting")
-    public String greeting(
-        @RequestParam(name="name", required=false, defaultValue="World") String name, Model model
-    ) {
-        model.addAttribute("name", name);
-        server.printHelloWorld();
-        return "greeting";
-    }
+    // @GetMapping("/greeting")
+    // public String greeting(
+    //     @RequestParam(name="name", required=false, defaultValue="World") String name, Model model
+    // ) {
+    //     model.addAttribute("name", name);
+    //     server.printHelloWorld();
+    //     return "greeting";
+    // }
 }
