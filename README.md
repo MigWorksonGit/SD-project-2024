@@ -12,3 +12,5 @@ decasegundos não é 0.1 segundos burrrrrrooooo
 
 howcroft@dei.uc.pt
 https://eden.dei.uc.pt/~rbarbosa/sd
+
+Go home button

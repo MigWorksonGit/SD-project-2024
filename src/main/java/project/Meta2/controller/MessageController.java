@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.HtmlUtils;
 
+import project.Meta1.beans.UrlInfo;
 import project.Meta2.beans.Message;
 import project.Meta2.beans.RMIbean;
 
@@ -49,9 +50,16 @@ public class MessageController
 
     @PostMapping("/search")
     public String search(
-        @RequestParam("words") String words, Model model
+        @RequestParam("words") String words,
+        @RequestParam(name="currentPage", defaultValue = "0") String currentPage,
+        Model model
     ) {
+        int currentPageInt = Integer.parseInt(currentPage); // Convert currentPage to int
+        String[] input = words.trim().split(" ");
+        List<UrlInfo> top10 = server.searchTop10_barrelPartition(input, currentPageInt);
         model.addAttribute("words", words);
+        model.addAttribute("items", top10);
+        model.addAttribute("currentPage", currentPageInt);
         return "search";
     }
 

@@ -10,7 +10,22 @@
 
     <p th:text="'Poggers: ' + ${words} + '.'" />
 
-    <button type="button">Prev</button>
-    <button type="button">Next</button>
+    <h1>List Items</h1>
+    <ul>
+        <li th:each="item : ${items}" th:text="${item}"></li>
+    </ul>
+
+    <form action="search" method="post">
+        <input type="hidden" name="words" th:value="${words}" />
+        <input type="hidden" name="currentPage" th:value="${currentPage - 10 >= 0 ? currentPage - 10 : 0}" />
+        <button type="submit">Prev</button>
+    </form>
+    
+    <form action="search" method="post">
+        <input type="hidden" name="words" th:value="${words}" />
+        <input type="hidden" name="currentPage" th:value="${currentPage + 10}" />
+        <button type="submit">Next</button>
+    </form>
+
 </body>
 </html>

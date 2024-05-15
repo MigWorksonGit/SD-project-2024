@@ -6,6 +6,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.List;
 
+import project.Meta1.beans.UrlInfo;
 import project.Meta1.beans.UrlQueueElement;
 import project.Meta1.interfaces.Client_I;
 import project.config.ConfigFile;
@@ -60,6 +61,20 @@ public class RMIbean {
             return server.getUrlsConnected2this(words);
         } catch (Exception e) {
             System.out.println("Kek");
+        }
+        return null;
+    }
+
+    public List<UrlInfo> searchTop10_barrelPartition(String[] term, int page){
+        try {
+            String temp = "pog ";
+            for (int i = 0; i < term.length; i++) {
+                temp += term[i];
+            }
+            String[] input = temp.trim().split(" ");
+            return server.searchTop10_BarrelPartition(input, page);
+        } catch (RemoteException e ) {
+            System.out.println("kek");
         }
         return null;
     }
