@@ -79,6 +79,14 @@ public class RMIbean {
         return null;
     }
 
+    public String getAdminInfo() {
+        try {
+            return server.getAdminInfo();
+        } catch (RemoteException e) {
+            return "skill issue";
+        }
+    }
+
     public void printHelloWorld() {
         try {
             server.print_on_server("Hello World!");

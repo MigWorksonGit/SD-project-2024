@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.HtmlUtils;
 
 import project.Meta1.beans.UrlInfo;
-import project.Meta2.beans.Message;
+import project.Meta2.beans.InfoMessage;
 import project.Meta2.beans.RMIbean;
 
 @Controller
@@ -26,12 +27,15 @@ public class MessageController
         this.server = server;
     }
 
+    @Autowired
+    private SimpMessagingTemplate template;
+
 	@MessageMapping("/message")
 	@SendTo("/topic/messages")
-	public Message onMessage(Message message) throws InterruptedException {
-		System.out.println("Message received " + message);
+	public InfoMessage onMessage(InfoMessage message) throws InterruptedException {
+		System.out.println("Message received " + server.getAdminInfo());
 		Thread.sleep(1000); // simulated delay
-		return new Message(HtmlUtils.htmlEscape(message.content()));
+		return new InfoMessage(HtmlUtils.htmlEscape(server.getAdminInfo()));
 	}
 
     @GetMapping("/admin-info")
@@ -57,6 +61,8 @@ public class MessageController
         int currentPageInt = Integer.parseInt(currentPage); // Convert currentPage to int
         String[] input = words.trim().split(" ");
         List<UrlInfo> top10 = server.searchTop10_barrelPartition(input, currentPageInt);
+        // Update websocket info
+        this.template.convertAndSend("/topic/messages", new InfoMessage(server.getAdminInfo()));
         model.addAttribute("words", words);
         model.addAttribute("items", top10);
         model.addAttribute("currentPage", currentPageInt);
