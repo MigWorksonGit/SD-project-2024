@@ -1,7 +1,10 @@
 package project.Meta2.controller;
 
 import java.util.List;
+import java.util.StringTokenizer;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -11,9 +14,13 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.HtmlUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import project.Meta1.beans.UrlInfo;
+import project.Meta2.beans.HackerNewsInfo;
 import project.Meta2.beans.InfoMessage;
 import project.Meta2.beans.RMIbean;
 
@@ -79,12 +86,56 @@ public class MessageController
         return "consult";
     }
 
-    // @GetMapping("/greeting")
-    // public String greeting(
-    //     @RequestParam(name="name", required=false, defaultValue="World") String name, Model model
-    // ) {
-    //     model.addAttribute("name", name);
-    //     server.printHelloWorld();
-    //     return "greeting";
-    // }
+    @PostMapping("/hackernews")
+    public String indexTopStories(
+        @RequestParam("words") String words,
+        Model model
+    ) {
+        String topStoriesEndpoint = "https://hacker-news.firebaseio.com/v0/topstories.json";
+        RestTemplate restTemplate = new RestTemplate();
+        String topStoriesIDs = restTemplate.getForObject(topStoriesEndpoint, String.class);
+        
+        StringTokenizer tokenizer = new StringTokenizer(topStoriesIDs,"[,]");
+
+        String[] input = words.trim().split(" ");
+
+        int maxTokens = 0;
+        try {
+            while (tokenizer.hasMoreTokens() && maxTokens++ < 10)
+            {
+                int storyID = Integer.parseInt(tokenizer.nextToken());
+                String userStoryEndpoint = "https://hacker-news.firebaseio.com/v0/item/" + storyID +".json";
+                String userStory = restTemplate.getForObject(userStoryEndpoint, String.class);
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                HackerNewsInfo item = objectMapper.readValue(userStory, HackerNewsInfo.class);
+
+                if (item.type().equals("story")) {
+                    if (item.url() != null) {
+                        // System.out.println(item.url());
+
+                        Document doc = Jsoup.connect(item.url()).get();
+                        StringTokenizer tokens = new StringTokenizer(doc.text());
+                        loop:
+                        while (tokens.hasMoreElements()) {
+                            String word = tokens.nextToken().strip().toLowerCase().replaceAll("[.,;:\\\"'?!|«»()\\[\\]{}-]", "");
+                            if (!word.matches("[a-zA-Z].*")) {
+                                continue;
+                            }
+                            for (int i = 0; i < input.length; i++) {
+                                if (word.equals(input[i])) {
+                                    server.indexUrl(item.url(), "-1");
+                                    System.out.println(item.url());
+                                    break loop;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Failed hahaha");
+        }
+        return "hackernews";
+    }
 }
