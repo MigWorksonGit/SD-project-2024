@@ -244,7 +244,8 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         for (int index : active_barrel_idx) {
             try {
                 info.append(barrels.get(index).getName()).append(" - ");
-                info.append(barrels.get(index).getAvgExeTime()).append("\n");
+                String str = Double.toString(barrels.get(index).getAvgExeTime());
+                info.append(str).append("\n");
             } catch (RemoteException e) {
                 continue;
             }
@@ -284,5 +285,9 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
             this.webclient = webclient;
             // webclient.print_on_webserver();
         }
+    }
+
+    public void unsubscribeWebClient() throws RemoteException {
+        this.webclient = null;
     }
 }

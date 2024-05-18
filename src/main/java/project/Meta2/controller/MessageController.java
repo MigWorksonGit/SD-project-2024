@@ -27,13 +27,8 @@ import project.Meta2.beans.InfoMessage;
 import project.Meta2.interfaces.WebClient_I;
 import project.config.ConfigFile;
 
-import com.google.cloud.vertexai.VertexAI;
-import com.google.cloud.vertexai.generativeai.GenerativeModel;
-
 import jakarta.annotation.PostConstruct;
 
-import com.google.cloud.vertexai.api.GenerateContentResponse;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
@@ -44,7 +39,7 @@ import java.rmi.server.UnicastRemoteObject;
 public class MessageController extends UnicastRemoteObject implements WebClient_I
 {
     private Client_I server;
-    int DEBUG_recursion_level = 10;
+    int DEBUG_recursion_level = 2;
 
     public MessageController() throws RemoteException {
         super();
@@ -78,8 +73,17 @@ public class MessageController extends UnicastRemoteObject implements WebClient_
         System.out.println("Construting Postttt");
         try {
             server.subscribeWebClient(this);
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    System.out.println("WebServer has died");
+                    server.unsubscribeWebClient();
+                } catch (RemoteException e) {
+                    ;
+                }
+            }));
         } catch (RemoteException e) {
-            System.out.println("WHy god why");
+            System.out.println("Some error ocurred when initializing server");
+            e.printStackTrace();
         }
     }
 
@@ -114,6 +118,7 @@ public class MessageController extends UnicastRemoteObject implements WebClient_
             model.addAttribute("url", url);
         } catch (RemoteException e) {
             System.out.println("Failed to connect to server");
+            model.addAttribute("url", "Failed to connect to server");
         }
         return "indexUrl";
     }
@@ -135,12 +140,11 @@ public class MessageController extends UnicastRemoteObject implements WebClient_
             }
             String[] term = temp.trim().split(" ");
             top10 = server.searchTop10_BarrelPartition(term, currentPageInt);
+            model.addAttribute("words", words);
         } catch (RemoteException e ) {
             System.out.println("Failed to connect to server/barrel");
+            model.addAttribute("words", "Failed to connect to server/barrel");
         }
-        // Update websocket info
-        // this.template.convertAndSend("/topic/messages", new InfoMessage(server.getAdminInfo()));
-        model.addAttribute("words", words);
         model.addAttribute("items", top10);
         model.addAttribute("currentPage", currentPageInt);
         return "search";
@@ -153,10 +157,11 @@ public class MessageController extends UnicastRemoteObject implements WebClient_
         List<String> list = null;
         try {
             list = server.getUrlsConnected2this(url);
+            model.addAttribute("url", url);
         } catch (RemoteException e) {
-            System.out.println("Failed to connect to server");
+            System.out.println("Failed to connect to server/barrel");
+            model.addAttribute("url", "Failed to connect to server/barrel");
         }
-        model.addAttribute("url", url);
         model.addAttribute("items", list);
         return "consult";
     }
@@ -214,28 +219,9 @@ public class MessageController extends UnicastRemoteObject implements WebClient_
                 }
             }
         } catch (Exception e) {
-            System.out.println("Failed hahaha");
+            System.out.println("Something in hacker news indexing failed");
         }
         return "hackernews";
-    }
-
-    @GetMapping("/test")
-    public String test() {
-        String PROJECT_ID = "19552739649";
-        String LOCATION = "us-central1";
-
-        try {
-            VertexAI vertexAI = new VertexAI(PROJECT_ID, LOCATION);
-
-            GenerativeModel model = new GenerativeModel("gemini-pro", vertexAI);
-            GenerateContentResponse response = model.generateContent("How are you?");
-            System.out.println(response.toString());
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return "admin-info";
     }
 
     public void print_on_webserver() throws RemoteException {

@@ -42,4 +42,8 @@ public class ClientServer extends UnicastRemoteObject implements Client_I
     public void subscribeWebClient(WebClient_I webclient) throws RemoteException {
         server.subscribeWebClient(webclient);
     }
+
+    public void unsubscribeWebClient() throws RemoteException {
+        server.unsubscribeWebClient();
+    }
 }

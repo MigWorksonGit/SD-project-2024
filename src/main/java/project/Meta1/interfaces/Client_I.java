@@ -16,5 +16,7 @@ public interface Client_I extends Remote
     public String getAdminInfo() throws RemoteException;
     public List<UrlInfo> searchTop10_BarrelPartition(String[] term, int page) throws RemoteException;
 
+    // Meta 2
     public void subscribeWebClient(WebClient_I webclient) throws RemoteException;
+    public void unsubscribeWebClient() throws RemoteException;
 }
