@@ -17,6 +17,7 @@ import project.Meta1.interfaces.Gateway_I;
 import project.Meta1.servers.BarrelServer;
 import project.Meta1.servers.ClientServer;
 import project.Meta1.servers.DownloaderServer;
+import project.Meta2.interfaces.WebClient_I;
 import project.config.ConfigFile;
 
 public class GatewayServer extends UnicastRemoteObject implements Gateway_I
@@ -45,6 +46,9 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     // Thread safe list.
     Semaphore list_mutex = new Semaphore(1);
     private ArrayList<Object[]> threadSafeList = new ArrayList<>();
+
+    // Meta 2
+    private WebClient_I webclient = null;
 
     public GatewayServer() throws RemoteException {
         super();
@@ -128,6 +132,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
                 active_barrel_idx.remove(i);
             }
         }
+        if (this.webclient != null) this.webclient.print_on_webserver();
     }
 
     public void addBarel(Barrel_C_I bar) throws RemoteException {
@@ -136,6 +141,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
             active_barrel_idx.add(0);
             barrels.get(0).setName("barrel_0");
             num_of_barrels++;
+            if (this.webclient != null) this.webclient.print_on_webserver();
             return;
         }
         for (int i = 0; i < num_of_barrels; i++) {
@@ -144,6 +150,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
                 barrels.set(i, bar);
                 barrels.get(i).setName("barrel_" + i);
                 active_barrel_idx.add(i);
+                if (this.webclient != null) this.webclient.print_on_webserver();
                 return;
             }
         }
@@ -152,6 +159,7 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         barrels.get(num_of_barrels).setName("barrel_" + num_of_barrels);
         active_barrel_idx.add(num_of_barrels);
         num_of_barrels++;
+        if (this.webclient != null) this.webclient.print_on_webserver();
     }
 
     public List<String> getUrlsConnected2this(String msg) throws RemoteException {
@@ -210,7 +218,9 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
                         throw new RemoteException();
                     }
                     if (active_barrel_idx.contains(rr_index)) {
-                        return barrels.get(rr_index++).searchTop10_BarrelPartition(term, page);
+                        List<UrlInfo> temp = barrels.get(rr_index++).searchTop10_BarrelPartition(term, page);
+                        if (this.webclient != null) this.webclient.print_on_webserver();
+                        return temp;
                     }
                     if (rr_index >= num_of_barrels) {
                         rr_index = 0;
@@ -267,5 +277,12 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
         info.append(getAliveBarrelName());
 
         return info.toString();
+    }
+
+    public void subscribeWebClient(WebClient_I webclient) throws RemoteException {
+        if (this.webclient == null) {
+            this.webclient = webclient;
+            // webclient.print_on_webserver();
+        }
     }
 }

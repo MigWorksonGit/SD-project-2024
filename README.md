@@ -14,3 +14,7 @@ howcroft@dei.uc.pt
 https://eden.dei.uc.pt/~rbarbosa/sd
 
 Go home button
+
+
+-> Index on index hacker news may have problems
+-> Dont forget to check if there are no barrels, downloaders, etc

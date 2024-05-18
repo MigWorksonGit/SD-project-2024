@@ -8,6 +8,7 @@ import project.Meta1.GatewayServer;
 import project.Meta1.beans.UrlInfo;
 import project.Meta1.beans.UrlQueueElement;
 import project.Meta1.interfaces.Client_I;
+import project.Meta2.interfaces.WebClient_I;
 
 public class ClientServer extends UnicastRemoteObject implements Client_I
 {
@@ -36,5 +37,9 @@ public class ClientServer extends UnicastRemoteObject implements Client_I
 
     public List<UrlInfo> searchTop10_BarrelPartition(String[] term, int page) throws RemoteException {
         return server.searchTop10_barrelPartition(term, page);
+    }
+
+    public void subscribeWebClient(WebClient_I webclient) throws RemoteException {
+        server.subscribeWebClient(webclient);
     }
 }

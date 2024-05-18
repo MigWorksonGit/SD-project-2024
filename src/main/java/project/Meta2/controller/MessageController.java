@@ -20,23 +20,67 @@ import org.springframework.web.util.HtmlUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import project.Meta1.beans.UrlInfo;
+import project.Meta1.beans.UrlQueueElement;
+import project.Meta1.interfaces.Client_I;
 import project.Meta2.beans.HackerNewsInfo;
 import project.Meta2.beans.InfoMessage;
-import project.Meta2.beans.RMIbean;
+import project.Meta2.interfaces.WebClient_I;
+import project.config.ConfigFile;
 
 import com.google.cloud.vertexai.VertexAI;
 import com.google.cloud.vertexai.generativeai.GenerativeModel;
+
+import jakarta.annotation.PostConstruct;
+
 import com.google.cloud.vertexai.api.GenerateContentResponse;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
 @Controller
-public class MessageController
+public class MessageController extends UnicastRemoteObject implements WebClient_I
 {
-    private final RMIbean server;
+    private Client_I server;
+    int DEBUG_recursion_level = 10;
 
-    @Autowired
-    public MessageController(RMIbean server) {
-        this.server = server;
+    public MessageController() throws RemoteException {
+        super();
+        ConfigFile data = new ConfigFile();
+        data.getJsonInfo();
+        String lookup = "rmi://" + data.getIp() + ":" + data.getPort() + "/client";
+        try {
+            try {
+                server = (Client_I) Naming.lookup(lookup);
+            }
+            catch(MalformedURLException e) {
+                System.out.println("Server Url is incorrectly formed");
+                System.out.println("Cant comunicate with server...");
+                System.out.println("Closing...");
+                System.exit(0);
+            }
+            catch (NotBoundException e) {
+                System.out.println("Cant comunicate with server...");
+                System.out.println("Closing...");
+                System.exit(0);
+            }
+            System.out.println("Client sent subscription to server");
+        } catch (RemoteException e) {
+            System.out.println("Error comunicating to the server");
+            System.exit(0);
+        }
+    }
+    
+    @PostConstruct
+    public void init() {
+        System.out.println("Construting Postttt");
+        try {
+            server.subscribeWebClient(this);
+        } catch (RemoteException e) {
+            System.out.println("WHy god why");
+        }
     }
 
     @Autowired
@@ -45,9 +89,15 @@ public class MessageController
 	@MessageMapping("/message")
 	@SendTo("/topic/messages")
 	public InfoMessage onMessage(InfoMessage message) throws InterruptedException {
-		System.out.println("Message received " + server.getAdminInfo());
-		Thread.sleep(1000); // simulated delay
-		return new InfoMessage(HtmlUtils.htmlEscape(server.getAdminInfo()));
+        try {
+            System.out.println("Message received " + server.getAdminInfo());
+            Thread.sleep(1000); // simulated delay
+            return new InfoMessage(HtmlUtils.htmlEscape(server.getAdminInfo()));
+        } 
+        catch (RemoteException e) {
+            System.out.println("Faied to retrive information");
+            return new InfoMessage(HtmlUtils.htmlEscape("Failed to retrive information from server"));
+        }
 	}
 
     @GetMapping("/admin-info")
@@ -59,8 +109,12 @@ public class MessageController
     public String indexUrl(
         @RequestParam("url") String url, Model model
     ) {
-        server.indexUrl(url, "-1");
-        model.addAttribute("url", url);
+        try {
+            server.indexUrl(new UrlQueueElement(url, DEBUG_recursion_level, "-1"));
+            model.addAttribute("url", url);
+        } catch (RemoteException e) {
+            System.out.println("Failed to connect to server");
+        }
         return "indexUrl";
     }
 
@@ -72,9 +126,20 @@ public class MessageController
     ) {
         int currentPageInt = Integer.parseInt(currentPage); // Convert currentPage to int
         String[] input = words.trim().split(" ");
-        List<UrlInfo> top10 = server.searchTop10_barrelPartition(input, currentPageInt);
+
+        List<UrlInfo> top10 = null;
+        try {
+            String temp = "temp ";
+            for (int i = 0; i < input.length; i++) {
+                temp += input[i];
+            }
+            String[] term = temp.trim().split(" ");
+            top10 = server.searchTop10_BarrelPartition(term, currentPageInt);
+        } catch (RemoteException e ) {
+            System.out.println("Failed to connect to server/barrel");
+        }
         // Update websocket info
-        this.template.convertAndSend("/topic/messages", new InfoMessage(server.getAdminInfo()));
+        // this.template.convertAndSend("/topic/messages", new InfoMessage(server.getAdminInfo()));
         model.addAttribute("words", words);
         model.addAttribute("items", top10);
         model.addAttribute("currentPage", currentPageInt);
@@ -85,7 +150,12 @@ public class MessageController
     public String consult(
         @RequestParam("url") String url, Model model
     ) {
-        List<String> list = server.getUrlsConnected2this(url);
+        List<String> list = null;
+        try {
+            list = server.getUrlsConnected2this(url);
+        } catch (RemoteException e) {
+            System.out.println("Failed to connect to server");
+        }
         model.addAttribute("url", url);
         model.addAttribute("items", list);
         return "consult";
@@ -128,8 +198,13 @@ public class MessageController
                                 continue;
                             }
                             for (int i = 0; i < input.length; i++) {
-                                if (word.equals(input[i])) {
-                                    server.indexUrl(item.url(), "-1");
+                                if (word.equals(input[i]))
+                                {
+                                    try {
+                                        server.indexUrl(new UrlQueueElement(item.url(), DEBUG_recursion_level, "-1"));
+                                    } catch (RemoteException e) {
+                                        System.out.println("Failed to connect to server");
+                                    }
                                     System.out.println(item.url());
                                     break loop;
                                 }
@@ -161,5 +236,10 @@ public class MessageController
         }
 
         return "admin-info";
+    }
+
+    public void print_on_webserver() throws RemoteException {
+        // System.out.println("Hello World!");
+        this.template.convertAndSend("/topic/messages", new InfoMessage(server.getAdminInfo()));
     }
 }
