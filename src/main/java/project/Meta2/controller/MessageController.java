@@ -193,6 +193,9 @@ public class MessageController extends UnicastRemoteObject implements WebClient_
                 if (item.type().equals("story")) {
                     if (item.url() != null) {
                         // System.out.println(item.url());
+                        if (item.url().equals("")) continue;
+                        if (!item.url().startsWith("https://")) continue;
+                        if (item.url().endsWith(".pdf")) continue;
 
                         Document doc = Jsoup.connect(item.url()).get();
                         StringTokenizer tokens = new StringTokenizer(doc.text());
@@ -220,6 +223,7 @@ public class MessageController extends UnicastRemoteObject implements WebClient_
             }
         } catch (Exception e) {
             System.out.println("Something in hacker news indexing failed");
+            e.printStackTrace();
         }
         return "hackernews";
     }
