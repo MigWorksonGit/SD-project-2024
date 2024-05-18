@@ -54,8 +54,9 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
     }
     // Average time
     double averageExecutionTime = 0;
+    double executions = 0;
     public double getAvgExeTime() throws RemoteException {
-        return averageExecutionTime;
+        return averageExecutionTime / executions;
     }
 
     //  mais relevante se tiver mais ligações **de** outras páginas
@@ -260,8 +261,10 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
         }
         LocalTime endTime = LocalTime.now(); // end timer
         Duration duration = Duration.between(startTime, endTime);
-        long deciseconds = duration.toMillis() / 100;
-        averageExecutionTime = (averageExecutionTime + deciseconds) / 2;
+        long nanoseconds = duration.toNanos();
+        double anoseconds = nanoseconds / 100_000_000.0;
+        averageExecutionTime += anoseconds;
+        executions++;
         return list;
     }
 
@@ -285,8 +288,10 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
             // timer stuff
             LocalTime endTime = LocalTime.now(); // end timer
             Duration duration = Duration.between(startTime, endTime);
-            double deciseconds = duration.toMillis() / 100;
-            averageExecutionTime = (averageExecutionTime + deciseconds) / 2;
+            long nanoseconds = duration.toNanos();
+            double anoseconds = nanoseconds / 100_000_000.0;
+            averageExecutionTime += anoseconds;
+            executions++;
             return finalList;
         }
         // else, if more than 1 word
@@ -320,8 +325,10 @@ public class Barrel extends UnicastRemoteObject implements Barrel_C_I
         // timer stuff
         LocalTime endTime = LocalTime.now(); // end timer
         Duration duration = Duration.between(startTime, endTime);
-        double deciseconds = duration.toMillis() / 100;
-        averageExecutionTime = (averageExecutionTime + deciseconds) / 2;
+        long nanoseconds = duration.toNanos();
+        double anoseconds = nanoseconds / 100_000_000.0;
+        averageExecutionTime += anoseconds;
+        executions++;
         return finalList;
     }
 }

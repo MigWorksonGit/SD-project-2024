@@ -229,12 +229,13 @@ public class GatewayServer extends UnicastRemoteObject implements Gateway_I
     }
 
     public String getAliveBarrelName() {
-        StringBuilder info = new StringBuilder();
+        StringBuilder info = new StringBuilder(100);
 
         for (int index : active_barrel_idx) {
             try {
                 info.append(barrels.get(index).getName()).append(" - ");
-                info.append(barrels.get(index).getAvgExeTime()).append("\n");
+                String str = Double.toString(barrels.get(index).getAvgExeTime());
+                info.append(str).append("\n");
             } catch (RemoteException e) {
                 continue;
             }
