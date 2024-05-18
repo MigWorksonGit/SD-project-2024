@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>search url</title>
+</head>
+<body>
+    <h1>Search list:</h1>
+
+    <p th:text="'Poggers: ' + ${words} + '.'" />
+
+    <h1>List Items</h1>
+    <ul>
+        <li th:each="item : ${items}" th:text="${item}"></li>
+    </ul>
+
+    <form action="search" method="post">
+        <input type="hidden" name="words" th:value="${words}" />
+        <input type="hidden" name="currentPage" th:value="${currentPage - 10 >= 0 ? currentPage - 10 : 0}" />
+        <button type="submit">Prev</button>
+    </form>
+    
+    <form action="search" method="post">
+        <input type="hidden" name="words" th:value="${words}" />
+        <input type="hidden" name="currentPage" th:value="${currentPage + 10}" />
+        <button type="submit">Next</button>
+    </form>
+
+</body>
+</html>
