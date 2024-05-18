@@ -36,7 +36,7 @@ function disconnect() {
 
 function sendMessage() {
     stompClient.send("/app/message", {},
-    JSON.stringify({'content': document.getElementById("information").value }));
+    JSON.stringify({'content': document.getElementById("message").value }));
 }
     
 
@@ -50,7 +50,8 @@ $(function () {
     $("form").on('submit', function (e) {
         e.preventDefault();
     });
-    connect();
+    $( "#connect" ).click(function() { connect(); });
+    $( "#disconnect" ).click(function() { disconnect(); });
     $( "#send" ).click(function() { sendMessage(); });
 });
 
